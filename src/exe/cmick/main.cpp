@@ -48,6 +48,22 @@ int main()
 	write("/tmp/test.pk", pk);
 	write("/tmp/test.sk", sk);
 
+	// generate a session key (32 bytes) and its encrypted counterpart (128 bytes)
+	vector<unsigned char> encrypted(crypto_kem_mceliece348864_ref_CIPHERTEXTBYTES);
+	vector<unsigned char> key(crypto_kem_mceliece348864_ref_BYTES);
+	crypto_kem_enc(encrypted.data(), key.data(), pk.data());
+
+	std::cout << " key is: " << std::endl;
+	for (int i = 0; i < key.size(); ++i)
+		std::cout << (unsigned)key[i] << std::endl;
+
+	// decrypt the encrypted key
+	vector<unsigned char> recoveredKey(crypto_kem_mceliece348864_ref_BYTES);
+	crypto_kem_dec(recoveredKey.data(), encrypted.data(), sk.data());
+
+	std::cout << "recovered key as: " << std::endl;
+	for (int i = 0; i < recoveredKey.size(); ++i)
+		std::cout << (unsigned)recoveredKey[i] << std::endl;
 
 	return 0;
 }
