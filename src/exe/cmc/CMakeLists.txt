@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(cmick)
+project(cmc)
 
 set (SOURCES
 	main.cpp
 )
 
 add_executable (
-	cmick
+	cmc
 	${SOURCES}
 )
 
-target_link_libraries(cmick
+target_link_libraries(cmc
 
 	mceliece348864
 
