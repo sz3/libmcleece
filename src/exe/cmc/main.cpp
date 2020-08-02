@@ -3,6 +3,10 @@ extern "C" {
 #include "mceliece348864/nist/rng.h"
 }
 
+#include "mcleese/public_key.h"
+#include "mcleese/secret_key.h"
+#include "mcleese/mce.h"
+
 #include "mceliece348864/crypto_kem.h"
 #include <iostream>
 #include <fstream>
@@ -11,12 +15,6 @@ extern "C" {
 using std::vector;
 
 namespace {
-	void write(std::string filename, const vector<unsigned char>& contents)
-	{
-		std::ofstream of(filename);
-		of.write(reinterpret_cast<const char*>(contents.data()), contents.size());
-	}
-
 	void init_rng()
 	{
 		// random_device offers poor randomness guarantees, unfortunately -- so it's not really a solution here.
@@ -40,18 +38,21 @@ int main()
 {
 	init_rng();
 
-	vector<unsigned char> pk(crypto_kem_mceliece348864_ref_PUBLICKEYBYTES);
-	vector<unsigned char> sk(crypto_kem_mceliece348864_ref_SECRETKEYBYTES);
-	int res = crypto_kem_keypair(pk.data(), sk.data());
+	mcleese::public_key pk;
+	mcleese::secret_key sk;
+	int res = mcleese::generate_keypair(pk, sk);
 	std::cout << "hello" << res << std::endl;
 
-	write("/tmp/test.pk", pk);
-	write("/tmp/test.sk", sk);
+	pk.save("/tmp/test.pk");
+	sk.save("/tmp/test.sk");
+
+	//pk.load("/tmp/test.pk");
+	//sk.load("/tmp/test.sk");
 
 	// generate a session key (32 bytes) and its encrypted counterpart (128 bytes)
 	vector<unsigned char> encrypted(crypto_kem_mceliece348864_ref_CIPHERTEXTBYTES);
 	vector<unsigned char> key(crypto_kem_mceliece348864_ref_BYTES);
-	crypto_kem_enc(encrypted.data(), key.data(), pk.data());
+	crypto_kem_enc(encrypted.data(), key.data(), pk.pk());
 
 	std::cout << " key is: " << std::endl;
 	for (int i = 0; i < key.size(); ++i)
@@ -59,7 +60,7 @@ int main()
 
 	// decrypt the encrypted key
 	vector<unsigned char> recoveredKey(crypto_kem_mceliece348864_ref_BYTES);
-	crypto_kem_dec(recoveredKey.data(), encrypted.data(), sk.data());
+	crypto_kem_dec(recoveredKey.data(), encrypted.data(), sk.sk());
 
 	std::cout << "recovered key as: " << std::endl;
 	for (int i = 0; i < recoveredKey.size(); ++i)
