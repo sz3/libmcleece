@@ -7,39 +7,45 @@
 
 namespace mcleese {
 
-class secret_key
+class private_key
 {
 public:
-	secret_key()
-		: _sk(crypto_kem_SECRETKEYBYTES)
+	private_key()
+		: _data(crypto_kem_SECRETKEYBYTES)
 	{}
 
-	unsigned char* sk()
+	private_key(std::string filename)
+		: private_key()
 	{
-		return _sk.data();
+		load(filename);
+	}
+
+	unsigned char* data()
+	{
+		return _data.data();
 	}
 
 	unsigned size() const
 	{
-		return _sk.size();
+		return _data.size();
 	}
 
 	bool save(const std::string& filename) const
 	{
 		// TODO: encrypt
 		std::ofstream f(filename);
-		f.write(reinterpret_cast<const char*>(_sk.data()), _sk.size());
+		f.write(reinterpret_cast<const char*>(_data.data()), _data.size());
 	}
 
 	bool load(const std::string& filename)
 	{
 		// TODO: decrypt
 		std::ifstream f(filename, std::ios::binary);
-		f.read(reinterpret_cast<char*>(_sk.data()), _sk.size());
+		f.read(reinterpret_cast<char*>(_data.data()), _data.size());
 	}
 
 protected:
-	std::vector<unsigned char> _sk;
+	std::vector<unsigned char> _data;
 };
 
 }
