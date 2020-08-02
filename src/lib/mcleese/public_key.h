@@ -26,6 +26,11 @@ public:
 		return _data.data();
 	}
 
+	const unsigned char* data() const
+	{
+		return _data.data();
+	}
+
 	unsigned size() const
 	{
 		return _data.size();

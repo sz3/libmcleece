@@ -2,6 +2,7 @@
 
 #include "public_key.h"
 #include "private_key.h"
+#include "session_key.h"
 
 #include "mceliece348864/crypto_kem.h"
 
@@ -24,4 +25,20 @@ namespace mcleese
 		secret.save(secret_path);
 	}
 
+	// two ways to get a session_key
+	// 1. generate a new one
+	// 2. pass in a string? base64 encoded? ... maybe the encoding is up to session_key?
+	session_key generate_session_key(const public_key& pubk)
+	{
+		session_key key;
+		int res = crypto_kem_enc(key.encrypted_key_data(), key.key_data(), pubk.data());
+		return key;
+	}
+
+	session_key decode_session_key(const private_key& secret, const std::string& encoded_session_key)
+	{
+		session_key key(encoded_session_key);
+		int res = crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret.data());
+		return key;
+	}
 }

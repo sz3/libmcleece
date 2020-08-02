@@ -8,6 +8,7 @@ set (PROJECTS
 
 	#src/lib/mcleese
 
+	src/third_party_lib/base64
 	src/third_party_lib/libkeccak
 	src/third_party_lib/mceliece348864
 )
