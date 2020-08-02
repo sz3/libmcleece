@@ -44,22 +44,18 @@ int main()
 	mcleese::public_key pubk("/tmp/test.pk");
 	mcleese::private_key secret("/tmp/test.sk");
 
-	// generate a session key (32 bytes) and its encrypted counterpart (128 bytes)
-	vector<unsigned char> encrypted(crypto_kem_mceliece348864_ref_CIPHERTEXTBYTES);
-	vector<unsigned char> key(crypto_kem_mceliece348864_ref_BYTES);
-	crypto_kem_enc(encrypted.data(), key.data(), pubk.data());
+	mcleese::session_key session = mcleese::generate_session_key(pubk);
 
 	std::cout << " key is: " << std::endl;
-	for (int i = 0; i < key.size(); ++i)
-		std::cout << (unsigned)key[i] << std::endl;
+	for (int i = 0; i < session.key().size(); ++i)
+		std::cout << (unsigned)session.key()[i] << std::endl;
 
 	// decrypt the encrypted key
-	vector<unsigned char> recoveredKey(crypto_kem_mceliece348864_ref_BYTES);
-	crypto_kem_dec(recoveredKey.data(), encrypted.data(), secret.data());
+	mcleese::session_key recoveredSession = mcleese::decode_session_key(secret, session.encrypted_key());
 
 	std::cout << "recovered key as: " << std::endl;
-	for (int i = 0; i < recoveredKey.size(); ++i)
-		std::cout << (unsigned)recoveredKey[i] << std::endl;
+	for (int i = 0; i < recoveredSession.key().size(); ++i)
+		std::cout << (unsigned)recoveredSession.key()[i] << std::endl;
 
 	return 0;
 }

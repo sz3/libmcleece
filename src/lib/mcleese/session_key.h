@@ -49,6 +49,11 @@ public:
 		return _encryptedKey.data();
 	}
 
+	const std::vector<unsigned char>& key() const
+	{
+		return _key;
+	}
+
 	std::string encrypted_key() const
 	{
 		std::string temp(_encryptedKey.begin(), _encryptedKey.end());
