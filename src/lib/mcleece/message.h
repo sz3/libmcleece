@@ -6,8 +6,10 @@
 #include "base64/base.hpp"
 #include "sodium/crypto_secretbox.h"
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace mcleece
 {
@@ -18,8 +20,8 @@ namespace mcleece
 
 		std::vector<unsigned char> ciphertext(message.size() + crypto_secretbox_MACBYTES);
 		int res = crypto_secretbox_easy(
-		    ciphertext.data(), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
-		    n.data(), session.key().data()
+			ciphertext.data(), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
+			n.data(), session.key().data()
 		);
 		if (res != 0)
 			return std::vector<unsigned char>();
@@ -34,8 +36,8 @@ namespace mcleece
 		std::string message;
 		message.resize(ciphertext.size() - crypto_secretbox_MACBYTES);
 		int res = crypto_secretbox_open_easy(
-		    reinterpret_cast<unsigned char*>(&message[0]), ciphertext.data(), ciphertext.size(),
-		    n.data(), session.key().data()
+			reinterpret_cast<unsigned char*>(&message[0]), ciphertext.data(), ciphertext.size(),
+			n.data(), session.key().data()
 		);
 		if (res != 0)
 			return std::string();
@@ -51,9 +53,18 @@ namespace mcleece
 		return base64::encode(buff);
 	}
 
+	std::optional<std::pair<session_key, nonce>> decode_session(const std::string& encoded)
+	{
+		std::string buff = base64::decode(encoded);
+		if (buff.size() < session_key::SIZE + nonce::SIZE)
+			return {};
+		return {};
+	}
+
 	std::string encode(const std::vector<unsigned char>& ciphertext)
 	{
 		std::string buff(ciphertext.begin(), ciphertext.end());
 		return base64::encode(buff);
 	}
+
 }

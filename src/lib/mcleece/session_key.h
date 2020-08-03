@@ -13,9 +13,12 @@ namespace mcleece {
 class session_key
 {
 public:
+	static const int SIZE = crypto_kem_CIPHERTEXTBYTES;
+
+public:
 	session_key()
 	    : _key(crypto_kem_BYTES)
-	    , _encryptedKey(crypto_kem_CIPHERTEXTBYTES)
+	    , _encryptedKey(SIZE)
 	    , _needsDecrypt(false)
 	{
 	}

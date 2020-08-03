@@ -13,8 +13,11 @@ namespace mcleece
 class nonce
 {
 public:
-	nonce(int size=0)
-		: _data(size > 0? size : crypto_secretbox_NONCEBYTES)
+	static const int SIZE = crypto_secretbox_NONCEBYTES;
+
+public:
+	nonce()
+		: _data(SIZE)
 	{
 		randomize();
 	}

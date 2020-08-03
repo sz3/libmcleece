@@ -1,9 +1,9 @@
 
-#include "mcleece/encrypt.h"
 #include "mcleece/init_rng.h"
 #include "mcleece/public_key.h"
 #include "mcleece/private_key.h"
 #include "mcleece/mce.h"
+#include "mcleece/message.h"
 
 #include <iostream>
 #include <fstream>
