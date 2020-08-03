@@ -5,20 +5,23 @@
 #include <string>
 #include <vector>
 
-namespace mcleese {
+namespace mcleece {
 
+
+// this class currently serves two distinct purposes right now, which is interesting
+// maybe a protected subclass with the "more public" methods? (and hiding the data accessors?)
 class session_key
 {
 public:
 	session_key()
-		: _key(crypto_kem_BYTES)
-		, _encryptedKey(crypto_kem_CIPHERTEXTBYTES)
-		, _needsDecrypt(false)
+	    : _key(crypto_kem_BYTES)
+	    , _encryptedKey(crypto_kem_CIPHERTEXTBYTES)
+	    , _needsDecrypt(false)
 	{
 	}
 
 	session_key(const std::string& encoded)
-		: session_key()
+	    : session_key()
 	{
 		init_decode(encoded);
 		_needsDecrypt = true;

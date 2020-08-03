@@ -1,4 +1,4 @@
-## libmcleese
+## libmcleece
 
 Command line tool -- and library -- to encrypt/decrypt messages using the Classic McCliece "post-quantum", code-based asymmetric key exchange scheme. You can use it to encrypt email contents, probably.
 

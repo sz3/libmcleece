@@ -6,17 +6,17 @@
 #include <string>
 #include <vector>
 
-namespace mcleese {
+namespace mcleece {
 
 class public_key
 {
 public:
 	public_key()
-		: _data(crypto_kem_PUBLICKEYBYTES)
+	    : _data(crypto_kem_PUBLICKEYBYTES)
 	{}
 
 	public_key(std::string filename)
-		: public_key()
+	    : public_key()
 	{
 		load(filename);
 	}

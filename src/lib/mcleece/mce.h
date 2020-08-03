@@ -6,7 +6,7 @@
 
 #include "mceliece348864/crypto_kem.h"
 
-namespace mcleese
+namespace mcleece
 {
 	int generate_keypair(public_key& pubk, private_key& secret)
 	{
@@ -23,6 +23,7 @@ namespace mcleese
 
 		pubk.save(pubk_path);
 		secret.save(secret_path);
+		return res;
 	}
 
 	// two ways to get a session_key

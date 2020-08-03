@@ -5,17 +5,17 @@
 #include <string>
 #include <vector>
 
-namespace mcleese {
+namespace mcleece {
 
 class private_key
 {
 public:
 	private_key()
-		: _data(crypto_kem_SECRETKEYBYTES)
+	    : _data(crypto_kem_SECRETKEYBYTES)
 	{}
 
 	private_key(std::string filename)
-		: private_key()
+	    : private_key()
 	{
 		load(filename);
 	}

@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
-project ( libmcleese_proj )
+project ( libmcleece_proj )
 enable_testing()
 
 set (PROJECTS
 	src/exe/cmc
 
-	#src/lib/mcleese
+	#src/lib/mcleece
 
 	src/third_party_lib/base64
 	src/third_party_lib/libkeccak
@@ -14,8 +14,8 @@ set (PROJECTS
 )
 
 include_directories(
-	${libmcleese_proj_SOURCE_DIR}/src/lib/
-	${libmcleese_proj_SOURCE_DIR}/src/third_party_lib/
+	${libmcleece_proj_SOURCE_DIR}/src/lib/
+	${libmcleece_proj_SOURCE_DIR}/src/third_party_lib/
 )
 
 foreach(proj ${PROJECTS})
