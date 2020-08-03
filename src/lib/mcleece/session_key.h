@@ -20,20 +20,19 @@ public:
 	{
 	}
 
-	session_key(const std::string& encoded)
+	session_key(const std::vector<unsigned char>& encrypted_key)
 	    : session_key()
 	{
-		init_decode(encoded);
+		init_decode(encrypted_key);
 		_needsDecrypt = true;
 	}
 
-	bool init_decode(const std::string& encoded)
+	bool init_decode(const std::vector<unsigned char>& encrypted_key)
 	{
-		std::string out = base64::decode(encoded);
-		if (out.size() != _encryptedKey.size())
+		if (encrypted_key.size() != _encryptedKey.size())
 			return false;
 
-		_encryptedKey.assign(out.begin(), out.end());
+		_encryptedKey = encrypted_key;
 		return true;
 	}
 
@@ -57,10 +56,9 @@ public:
 		return _key;
 	}
 
-	std::string encrypted_key() const
+	const std::vector<unsigned char>& encrypted_key() const
 	{
-		std::string temp(_encryptedKey.begin(), _encryptedKey.end());
-		return base64::encode(temp);
+		return _encryptedKey;
 	}
 
 protected:

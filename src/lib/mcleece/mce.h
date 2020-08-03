@@ -36,9 +36,9 @@ namespace mcleece
 		return key;
 	}
 
-	session_key decode_session_key(const private_key& secret, const std::string& encoded_session_key)
+	session_key decode_session_key(const private_key& secret, const std::vector<unsigned char>& encrypted_key)
 	{
-		session_key key(encoded_session_key);
+		session_key key(encrypted_key);
 		int res = crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret.data());
 		return key;
 	}

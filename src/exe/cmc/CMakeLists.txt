@@ -17,6 +17,7 @@ target_link_libraries(cmc
 
 	crypto
 	keccak
+	sodium
 	ssl
 )
 

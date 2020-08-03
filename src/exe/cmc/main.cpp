@@ -1,10 +1,10 @@
 
+#include "mcleece/encrypt.h"
 #include "mcleece/init_rng.h"
 #include "mcleece/public_key.h"
 #include "mcleece/private_key.h"
 #include "mcleece/mce.h"
 
-#include "sodium/crypto_secretbox.h"
 #include <iostream>
 #include <fstream>
 #include <random>
@@ -22,17 +22,18 @@ int main()
 	mcleece::private_key secret("/tmp/test.sk");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
+	mcleece::nonce n;
+	vector<unsigned char> ciphertext = mcleece::encrypt(session, "hello world", n);
 
-	std::cout << " key is: " << std::endl;
-	for (int i = 0; i < session.key().size(); ++i)
-		std::cout << (unsigned)session.key()[i] << std::endl;
+	std::string b64session = mcleece::encode_session(session, n);
+	std::cout << b64session << std::endl;
+	std::string b64c = mcleece::encode(ciphertext);
+	std::cout << b64c << std::endl;
 
 	// decrypt the encrypted key
 	mcleece::session_key recoveredSession = mcleece::decode_session_key(secret, session.encrypted_key());
+	std::string message = mcleece::decrypt(recoveredSession, ciphertext, n);
 
-	std::cout << "recovered key as: " << std::endl;
-	for (int i = 0; i < recoveredSession.key().size(); ++i)
-		std::cout << (unsigned)recoveredSession.key()[i] << std::endl;
-
+	std::cout << message << std::endl;
 	return 0;
 }
