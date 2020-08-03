@@ -22,6 +22,12 @@ public:
 		randomize();
 	}
 
+	nonce(char* data)
+		: _data(SIZE)
+	{
+		std::copy(data, data+SIZE, _data.data());
+	}
+
 	int randomize()
 	{
 		return randombytes(_data.data(), _data.size());

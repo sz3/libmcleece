@@ -30,9 +30,17 @@ int main()
 	std::string b64c = mcleece::encode(ciphertext);
 	std::cout << b64c << std::endl;
 
+	auto session_nonce = mcleece::decode_session(b64session);
+	if (!session_nonce)
+		std::cout << "failed decode_session :(" << std::endl;
+
+	std::vector<unsigned char>& enc_session = session_nonce->first;
+	mcleece::nonce& enc_n = session_nonce->second;
+	vector<unsigned char> rec_ciphertext = mcleece::decode(b64c);
+
 	// decrypt the encrypted key
-	mcleece::session_key recoveredSession = mcleece::decode_session_key(secret, session.encrypted_key());
-	std::string message = mcleece::decrypt(recoveredSession, ciphertext, n);
+	mcleece::session_key recoveredSession = mcleece::decode_session_key(secret, enc_session);
+	std::string message = mcleece::decrypt(recoveredSession, rec_ciphertext, enc_n);
 
 	std::cout << message << std::endl;
 	return 0;
