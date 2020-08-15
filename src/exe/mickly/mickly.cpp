@@ -28,7 +28,7 @@ namespace {
 		if (errormsg.size())
 			std::cout << errormsg << std::endl << std::endl;
 		std::cout << options.help() << std::endl;
-		return 400;
+		return 100;
 	}
 }
 

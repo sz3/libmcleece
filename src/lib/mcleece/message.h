@@ -71,28 +71,8 @@ namespace mcleece
 		return {{session, n}};
 	}
 
-	std::optional<std::pair<std::vector<unsigned char>, nonce>> decode_session(const std::string& encoded)
+	std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const std::string& encoded)
 	{
-		// should move base64 stuff out of this file
-		std::string buff = base64::decode(encoded);
-		if (buff.size() < session_key::SIZE + nonce::SIZE)
-			return {};
-
-		std::vector<unsigned char> session(buff.data(), buff.data() + session_key::SIZE);
-		nonce n(buff.data() + session_key::SIZE);
-		return {{session, n}};
+		return decode_session(secret, encoded.data(), encoded.size());
 	}
-
-	std::string encode(const std::vector<unsigned char>& ciphertext)
-	{
-		std::string buff(ciphertext.begin(), ciphertext.end());
-		return base64::encode(buff);
-	}
-
-	std::vector<unsigned char> decode(const std::string& encoded_ciphertext)
-	{
-		std::string buff = base64::decode(encoded_ciphertext);
-		return std::vector<unsigned char>(buff.begin(), buff.end());
-	}
-
 }
