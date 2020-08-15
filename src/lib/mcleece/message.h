@@ -20,14 +20,16 @@ namespace mcleece
 
 		std::vector<unsigned char> ciphertext(message.size() + crypto_secretbox_MACBYTES);
 		int res = crypto_secretbox_easy(
-			ciphertext.data(), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
-			n.data(), session.key().data()
+		    ciphertext.data(), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
+		    n.data(), session.key().data()
 		);
 		if (res != 0)
 			return std::vector<unsigned char>();
 		return ciphertext;
 	}
 
+	// might want to make ciphertext a template, so it can take std::string too?
+	// or, possible, just switch std::string across the board?
 	std::string decrypt(const session_key& session, const std::vector<unsigned char>& ciphertext, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_KEYBYTES)
@@ -36,8 +38,8 @@ namespace mcleece
 		std::string message;
 		message.resize(ciphertext.size() - crypto_secretbox_MACBYTES);
 		int res = crypto_secretbox_open_easy(
-			reinterpret_cast<unsigned char*>(&message[0]), ciphertext.data(), ciphertext.size(),
-			n.data(), session.key().data()
+		    reinterpret_cast<unsigned char*>(&message[0]), ciphertext.data(), ciphertext.size(),
+		    n.data(), session.key().data()
 		);
 		if (res != 0)
 			return std::string();
