@@ -5,10 +5,9 @@ enable_testing()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set (PROJECTS
-	src/exe/cmc
 	src/exe/mickly
 
-	#src/lib/mcleece
+	src/lib/mcleece
 
 	src/third_party_lib/base64
 	src/third_party_lib/libkeccak

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "keygen.h"
 #include "nonce.h"
 #include "session_key.h"
 
@@ -13,24 +14,23 @@
 
 namespace mcleece
 {
-	std::vector<unsigned char> encrypt(const session_key& session, const std::string& message, const nonce& n)
+	std::string encrypt(const session_key& session, const std::string& message, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_KEYBYTES)
-			return std::vector<unsigned char>();
+			return std::string();
 
-		std::vector<unsigned char> ciphertext(message.size() + crypto_secretbox_MACBYTES);
+		std::string ciphertext;
+		ciphertext.resize(message.size() + crypto_secretbox_MACBYTES);
 		int res = crypto_secretbox_easy(
-		    ciphertext.data(), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
+		    reinterpret_cast<unsigned char*>(&ciphertext[0]), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
 		    n.data(), session.key().data()
 		);
 		if (res != 0)
-			return std::vector<unsigned char>();
+			return std::string();
 		return ciphertext;
 	}
 
-	// might want to make ciphertext a template, so it can take std::string too?
-	// or, possible, just switch std::string across the board?
-	std::string decrypt(const session_key& session, const std::vector<unsigned char>& ciphertext, const nonce& n)
+	std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_KEYBYTES)
 			return std::string();
@@ -38,12 +38,17 @@ namespace mcleece
 		std::string message;
 		message.resize(ciphertext.size() - crypto_secretbox_MACBYTES);
 		int res = crypto_secretbox_open_easy(
-		    reinterpret_cast<unsigned char*>(&message[0]), ciphertext.data(), ciphertext.size(),
+		    reinterpret_cast<unsigned char*>(&message[0]), reinterpret_cast<const unsigned char*>(ciphertext.data()), ciphertext.size(),
 		    n.data(), session.key().data()
 		);
 		if (res != 0)
 			return std::string();
 		return message;
+	}
+
+	constexpr unsigned encoded_session_size()
+	{
+		return session_key::SIZE + nonce::SIZE;
 	}
 
 	std::string encode_session(const session_key& session, const nonce& n)
@@ -52,11 +57,23 @@ namespace mcleece
 		buff.resize(session.encrypted_key().size() + n.size());
 		std::copy(session.encrypted_key().begin(), session.encrypted_key().end(), &buff[0]);
 		std::copy(n.data(), n.data()+n.size(), &buff[session.encrypted_key().size()]);
-		return base64::encode(buff);
+		return buff;
+	}
+
+	std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const char* data, unsigned len)
+	{
+		if (len < encoded_session_size())
+			return {};
+
+		std::vector<unsigned char> sbuff(data, data + session_key::SIZE);
+		auto session = mcleece::decode_session_key(secret, sbuff);
+		nonce n(data + session_key::SIZE);
+		return {{session, n}};
 	}
 
 	std::optional<std::pair<std::vector<unsigned char>, nonce>> decode_session(const std::string& encoded)
 	{
+		// should move base64 stuff out of this file
 		std::string buff = base64::decode(encoded);
 		if (buff.size() < session_key::SIZE + nonce::SIZE)
 			return {};

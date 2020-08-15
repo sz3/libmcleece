@@ -17,13 +17,13 @@ public:
 
 public:
 	nonce()
-		: _data(SIZE)
+	    : _data(SIZE)
 	{
 		randomize();
 	}
 
-	nonce(char* data)
-		: _data(SIZE)
+	nonce(const char* data)
+	    : _data(SIZE)
 	{
 		std::copy(data, data+SIZE, _data.data());
 	}

@@ -80,11 +80,11 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 		string output = result["output"].as<string>();
 		if (output.empty())
-			return mcleece::actions::encrypt(key_path, std::cout);
+			return mcleece::actions::encrypt(key_path, input, std::cout);
 		else
 		{
 			std::ofstream f(output);
-			return mcleece::actions::encrypt(key_path, f);
+			return mcleece::actions::encrypt(key_path, input, f);
 		}
 	}
 
@@ -95,7 +95,15 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file!");
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
-		return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id));
+
+		string output = result["output"].as<string>();
+		if (output.empty())
+			return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id), input, std::cout);
+		else
+		{
+			std::ofstream f(output);
+			return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id), input, f);
+		}
 	}
 
 	else
