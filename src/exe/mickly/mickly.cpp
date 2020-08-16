@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 			return mcleece::actions::encrypt(key_path, input, std::cout);
 		else
 		{
-			std::ofstream f(output);
+			std::ofstream f(output, std::ofstream::binary);
 			return mcleece::actions::encrypt(key_path, input, f);
 		}
 	}
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 			return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id), input, std::cout);
 		else
 		{
-			std::ofstream f(output);
+			std::ofstream f(output, std::ofstream::binary);
 			return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id), input, f);
 		}
 	}

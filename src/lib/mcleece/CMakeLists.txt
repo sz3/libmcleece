@@ -13,3 +13,4 @@ set(SOURCES
 
 add_library(mcleece INTERFACE)
 
+add_subdirectory(test)
