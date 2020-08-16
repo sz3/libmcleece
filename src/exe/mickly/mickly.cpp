@@ -80,11 +80,11 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 		string output = result["output"].as<string>();
 		if (output.empty())
-			return mcleece::actions::encrypt(key_path, input, std::cout);
+			return mcleece::actions::encrypt(fmt::format("{}/{}.pk", key_path, id), input, std::cout);
 		else
 		{
 			std::ofstream f(output, std::ofstream::binary);
-			return mcleece::actions::encrypt(key_path, input, f);
+			return mcleece::actions::encrypt(fmt::format("{}/{}.pk", key_path, id), input, f);
 		}
 	}
 
