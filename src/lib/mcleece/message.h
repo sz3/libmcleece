@@ -14,7 +14,7 @@
 
 namespace mcleece
 {
-	std::string encrypt(const session_key& session, const std::string& message, const nonce& n)
+	inline std::string encrypt(const session_key& session, const std::string& message, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_KEYBYTES)
 			return std::string();
@@ -30,7 +30,7 @@ namespace mcleece
 		return ciphertext;
 	}
 
-	std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
+	inline std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_KEYBYTES)
 			return std::string();
@@ -46,12 +46,12 @@ namespace mcleece
 		return message;
 	}
 
-	constexpr unsigned encoded_session_size()
+	inline constexpr unsigned encoded_session_size()
 	{
 		return session_key::SIZE + nonce::SIZE;
 	}
 
-	std::string encode_session(const session_key& session, const nonce& n)
+	inline std::string encode_session(const session_key& session, const nonce& n)
 	{
 		std::string buff;
 		buff.resize(session.encrypted_key().size() + n.size());
@@ -60,7 +60,7 @@ namespace mcleece
 		return buff;
 	}
 
-	std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const char* data, unsigned len)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const char* data, unsigned len)
 	{
 		if (len < encoded_session_size())
 			return {};
@@ -71,7 +71,7 @@ namespace mcleece
 		return {{session, n}};
 	}
 
-	std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const std::string& encoded)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const std::string& encoded)
 	{
 		return decode_session(secret, encoded.data(), encoded.size());
 	}
