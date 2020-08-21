@@ -53,9 +53,6 @@ namespace actions {
 	template <typename OUTSTREAM>
 	int decrypt(std::string keypath, std::string infile, OUTSTREAM& os)
 	{
-		// read some bytes -- we'll try to decode a session, first.
-		// base64 check will either be done as a flag, or via stream magic
-
 		mcleece::private_key secret(keypath);
 
 		// ifstream's api is bad and I'd rather just use fread()

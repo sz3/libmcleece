@@ -2,7 +2,7 @@
 #pragma once
 
 #include "base64/base.hpp"
-#include "mceliece348864/crypto_kem.h"
+#include "mceliece8192128/crypto_kem.h"
 #include <string>
 #include <vector>
 

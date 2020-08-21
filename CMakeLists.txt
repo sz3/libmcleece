@@ -13,6 +13,7 @@ set (PROJECTS
 	src/third_party_lib/base64
 	src/third_party_lib/libkeccak
 	src/third_party_lib/mceliece348864
+	src/third_party_lib/mceliece8192128
 )
 
 include_directories(

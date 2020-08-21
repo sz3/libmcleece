@@ -23,7 +23,7 @@ add_test(mcleece_test mcleece_test)
 
 target_link_libraries(mcleece_test
 
-	mceliece348864
+	mceliece8192128
 
 	crypto
 	keccak
