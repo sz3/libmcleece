@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "rng.h"
-#include "crypto_kem.h"
+#include "../crypto_kem.h"
 
 #define KAT_SUCCESS          0
 #define KAT_FILE_OPEN_ERROR -1
