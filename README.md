@@ -2,7 +2,7 @@
 
 Command line tool -- and library -- to encrypt/decrypt messages using the Classic McEliece "post-quantum", code-based asymmetric key exchange scheme. You can use it to encrypt email contents, probably.
 
-The code is from the Classic McEliece NIST submission:
+The [code that does the real work](https://github.com/sz3/libmcleece/tree/master/src/third_party_lib/mceliece8192128) is from the Classic McEliece NIST submission:
 https://classic.mceliece.org/nist.html
 
 The submission is not a standard yet!
