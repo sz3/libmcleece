@@ -1,8 +1,8 @@
 ## libmcleece
 
-Command line tool -- and library -- to encrypt/decrypt messages using the Classic McCliece "post-quantum", code-based asymmetric key exchange scheme. You can use it to encrypt email contents, probably.
+Command line tool -- and library -- to encrypt/decrypt messages using the Classic McEliece "post-quantum", code-based asymmetric key exchange scheme. You can use it to encrypt email contents, probably.
 
-The code is from the Classic McCliece NIST submission:
+The code is from the Classic McEliece NIST submission:
 https://classic.mceliece.org/nist.html
 
 The submission is not a standard yet!
