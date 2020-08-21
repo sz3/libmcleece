@@ -46,7 +46,6 @@ int main(int argc, char** argv)
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
 	    ("id", "Identity (basename) of keypair", cxxopts::value<string>()->default_value(""))
 	    ("keypair-path", "Path to keypair (default: cwd)", cxxopts::value<string>())
-	    ("base64", "For encryption, base64 encode outputs. For decryption, base64 decode inputs.", cxxopts::value<bool>())
 	    ("h,help", "Print usage")
 	;
 	options.parse_positional({"command", "input", "output"});
@@ -79,13 +78,15 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file!");
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
+
 		string output = result["output"].as<string>();
+		string key = fmt::format("{}/{}.pk", key_path, id);
 		if (output.empty())
-			return mcleece::actions::encrypt(fmt::format("{}/{}.pk", key_path, id), input, std::cout);
+			return mcleece::actions::encrypt(key, input, std::cout);
 		else
 		{
 			std::ofstream f(output, std::ofstream::binary);
-			return mcleece::actions::encrypt(fmt::format("{}/{}.pk", key_path, id), input, f);
+			return mcleece::actions::encrypt(key, input, f);
 		}
 	}
 
@@ -98,12 +99,13 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 
 		string output = result["output"].as<string>();
+		string key = fmt::format("{}/{}.sk", key_path, id);
 		if (output.empty())
-			return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id), input, std::cout);
+			return mcleece::actions::decrypt(key, input, std::cout);
 		else
 		{
 			std::ofstream f(output, std::ofstream::binary);
-			return mcleece::actions::decrypt(fmt::format("{}/{}.sk", key_path, id), input, f);
+			return mcleece::actions::decrypt(key, input, f);
 		}
 	}
 
