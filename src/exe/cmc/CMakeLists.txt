@@ -13,7 +13,7 @@ add_executable (
 
 target_link_libraries(cmc
 
-	mceliece348864
+	mceliece8192128
 
 	crypto
 	keccak

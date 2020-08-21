@@ -2,7 +2,7 @@
 #pragma once
 
 extern "C" {
-#include "mceliece348864/nist/rng.h"
+#include "mceliece8192128/nist/rng.h"
 }
 
 #include <random>

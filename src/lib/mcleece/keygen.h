@@ -5,7 +5,7 @@
 #include "private_key.h"
 #include "session_key.h"
 
-#include "mceliece348864/crypto_kem.h"
+#include "mceliece8192128/crypto_kem.h"
 
 namespace mcleece
 {
