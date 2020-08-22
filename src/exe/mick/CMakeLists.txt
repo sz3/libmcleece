@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(mickly)
+project(mick)
 
 set (SOURCES
-	mickly.cpp
+	mick.cpp
 )
 
 add_executable (
-	mickly
+	mick
 	${SOURCES}
 )
 
-target_link_libraries(mickly
+target_link_libraries(mick
 
 	mceliece8192128
 
