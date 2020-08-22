@@ -21,4 +21,14 @@ target_link_libraries(mick
 	ssl
 )
 
+add_custom_command(
+	TARGET mick POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mick> mick.dbg
+	COMMAND ${CMAKE_STRIP} -g $<TARGET_FILE:mick>
+)
+
+install(
+	TARGETS mick
+	DESTINATION bin
+)
 
