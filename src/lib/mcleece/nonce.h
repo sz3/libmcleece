@@ -1,11 +1,8 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-extern "C" {
-#include "mceliece8192128/nist/rng.h"
-}
-
 #include "sodium/crypto_secretbox.h"
+#include "sodium/randombytes.h"
 #include <vector>
 
 namespace mcleece
@@ -29,9 +26,9 @@ public:
 		std::copy(data, data+SIZE, _data.data());
 	}
 
-	int randomize()
+	void randomize()
 	{
-		return randombytes(_data.data(), _data.size());
+		randombytes(_data.data(), _data.size());
 	}
 
 	const unsigned char* data() const

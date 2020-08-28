@@ -6,7 +6,6 @@
 #include "mcleece/keygen.h"
 #include "mcleece/message.h"
 
-#include "util/File.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>

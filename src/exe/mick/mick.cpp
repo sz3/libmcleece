@@ -1,7 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 
 #include "mcleece/actions.h"
-#include "mcleece/init_rng.h"
 
 #include "cxxopts/cxxopts.hpp"
 #include <iostream>
@@ -35,8 +34,6 @@ namespace {
 
 int main(int argc, char** argv)
 {
-	mcleece::init_rng();
-
 	cxxopts::Options options("mickly", "Encrypt and decrypt using Classic McEliece");
 
 	// password passed on stdin!

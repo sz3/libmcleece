@@ -1,6 +1,5 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 
-#include "mcleece/init_rng.h"
 #include "mcleece/keygen.h"
 #include "mcleece/message.h"
 #include "mcleece/public_key.h"
@@ -14,8 +13,6 @@ using std::vector;
 
 int main()
 {
-	mcleece::init_rng();
-
 	int res = mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk");
 	std::cout << "hello" << res << std::endl;
 
