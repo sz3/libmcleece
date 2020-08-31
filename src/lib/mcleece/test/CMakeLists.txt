@@ -6,6 +6,7 @@ set (SOURCES
 	test.cpp
 	actionsTest.cpp
 	messageTest.cpp
+	private_keyTest.cpp
 )
 
 include_directories(
@@ -29,5 +30,6 @@ target_link_libraries(mcleece_test
 	keccak
 	sodium
 	ssl
+	${CPPFILESYSTEM}
 )
 

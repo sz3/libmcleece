@@ -6,6 +6,7 @@
 #include "mcleece/keygen.h"
 #include "mcleece/message.h"
 
+#include "util/MakeTempDirectory.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -17,10 +18,10 @@ using namespace std;
 
 TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 {
-	// the best rng is no rng
+	MakeTempDirectory tempdir;
 
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
-	mcleece::public_key pubk("/tmp/test.pk");
+	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
+	mcleece::public_key pubk(tempdir.path() / "test.pk");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
 	mcleece::nonce n;
@@ -28,30 +29,30 @@ TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 	std::string sessiontext = mcleece::encode_session(session, n);
 
 	{
-		std::ofstream f("/tmp/encrypted_msg");
+		std::ofstream f(tempdir.path() / "encrypted_msg");
 		f << sessiontext;
 		f << ciphertext;
 	}
 
 	std::stringstream ss;
-	assertEquals(0, mcleece::actions::decrypt("/tmp/test.sk", "password", "/tmp/encrypted_msg", ss));
+	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", tempdir.path() / "encrypted_msg", ss));
 	assertEquals( "hello world", ss.str() );
 }
 
 TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 {
-	// the best rng is no rng
+	MakeTempDirectory tempdir;
 
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
-	mcleece::private_key secret("/tmp/test.sk", "password");
+	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
+	mcleece::private_key secret(tempdir.path() / "test.sk", "password");
 
 	{
-		std::ofstream f("/tmp/helloworld");
+		std::ofstream f(tempdir.path() / "helloworld");
 		f << "hello friends";
 	}
 
 	std::stringstream ss;
-	assertEquals( 0, mcleece::actions::encrypt("/tmp/test.pk", "/tmp/helloworld", ss) );
+	assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", tempdir.path() / "helloworld", ss) );
 
 	std::string enc_message = ss.str();
 	auto session_nonce = mcleece::decode_session(secret, enc_message);
@@ -68,21 +69,22 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 
 TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 {
-	// the best rng is no rng
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
+	MakeTempDirectory tempdir;
+
+	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
 
 	{
-		std::ofstream f("/tmp/helloworld");
+		std::ofstream f(tempdir.path() / "helloworld");
 		f << "hello friends";
 	}
 
 	{
-		std::ofstream f("/tmp/encrypted_msg");
-		assertEquals( 0, mcleece::actions::encrypt("/tmp/test.pk", "/tmp/helloworld", f) );
+		std::ofstream f(tempdir.path() / "encrypted_msg");
+		assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", tempdir.path() / "helloworld", f) );
 	}
 
 	std::stringstream ss;
-	assertEquals(0, mcleece::actions::decrypt("/tmp/test.sk", "password", "/tmp/encrypted_msg", ss));
+	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", tempdir.path() / "encrypted_msg", ss));
 	assertEquals( "hello friends", ss.str() );
 }
 

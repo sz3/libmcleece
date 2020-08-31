@@ -68,6 +68,7 @@ public:
 
 		f.write(reinterpret_cast<const char*>(salt.data()), salt.size());
 		f.write(reinterpret_cast<const char*>(blob.data()), blob.size());
+		return true;
 	}
 
 	bool load(const std::string& filename, const std::string& pw)
@@ -89,6 +90,7 @@ public:
 		// xor it with the data blob to get our real data back
 		for (int i = 0; i < _data.size(); ++i)
 			_data[i] ^= blob[i];
+		return true;
 	}
 
 protected:

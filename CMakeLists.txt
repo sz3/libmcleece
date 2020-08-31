@@ -14,11 +14,19 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fpic")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+        set(CPPFILESYSTEM "stdc++fs")
+    endif()
+endif()
+
 set (PROJECTS
 	src/exe/cmc
 	src/exe/mick
 
 	src/lib/mcleece
+	src/lib/serialize
+	src/lib/util
 
 	src/third_party_lib/base64
 	src/third_party_lib/libkeccak
