@@ -15,9 +15,9 @@ TEST_CASE( "messageTest/testRoundtrip", "[unit]" )
 {
 	// the best rng is no rng
 
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk");
+	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
 	mcleece::public_key pubk("/tmp/test.pk");
-	mcleece::private_key secret("/tmp/test.sk");
+	mcleece::private_key secret("/tmp/test.sk", "password");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
 	mcleece::nonce n;

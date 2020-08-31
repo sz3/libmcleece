@@ -19,7 +19,7 @@ TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 {
 	// the best rng is no rng
 
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk");
+	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
 	mcleece::public_key pubk("/tmp/test.pk");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
@@ -34,7 +34,7 @@ TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 	}
 
 	std::stringstream ss;
-	assertEquals(0, mcleece::actions::decrypt("/tmp/test.sk", "/tmp/encrypted_msg", ss));
+	assertEquals(0, mcleece::actions::decrypt("/tmp/test.sk", "password", "/tmp/encrypted_msg", ss));
 	assertEquals( "hello world", ss.str() );
 }
 
@@ -42,8 +42,8 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 {
 	// the best rng is no rng
 
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk");
-	mcleece::private_key secret("/tmp/test.sk");
+	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
+	mcleece::private_key secret("/tmp/test.sk", "password");
 
 	{
 		std::ofstream f("/tmp/helloworld");
@@ -69,7 +69,7 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 {
 	// the best rng is no rng
-	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk");
+	mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
 
 	{
 		std::ofstream f("/tmp/helloworld");
@@ -82,7 +82,7 @@ TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 	}
 
 	std::stringstream ss;
-	assertEquals(0, mcleece::actions::decrypt("/tmp/test.sk", "/tmp/encrypted_msg", ss));
+	assertEquals(0, mcleece::actions::decrypt("/tmp/test.sk", "password", "/tmp/encrypted_msg", ss));
 	assertEquals( "hello friends", ss.str() );
 }
 

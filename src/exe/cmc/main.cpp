@@ -13,11 +13,11 @@ using std::vector;
 
 int main()
 {
-	int res = mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk");
+	int res = mcleece::generate_keypair("/tmp/test.pk", "/tmp/test.sk", "password");
 	std::cout << "hello" << res << std::endl;
 
 	mcleece::public_key pubk("/tmp/test.pk");
-	mcleece::private_key secret("/tmp/test.sk");
+	mcleece::private_key secret("/tmp/test.sk", "password");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
 	mcleece::nonce n;

@@ -3,6 +3,7 @@
 
 #include "base64/base.hpp"
 #include "mceliece8192128/crypto_kem.h"
+#include <array>
 #include <string>
 #include <vector>
 
@@ -15,20 +16,18 @@ class session_key
 {
 public:
 	static const int SIZE = crypto_kem_CIPHERTEXTBYTES;
+	using KEY_ARRAY = std::array<unsigned char, crypto_kem_BYTES>;
+	using ENCRYPTED_ARRAY = std::array<unsigned char, SIZE>;
 
 public:
 	session_key()
-	    : _key(crypto_kem_BYTES)
-	    , _encryptedKey(SIZE)
-	    , _needsDecrypt(false)
+	    : _needsDecrypt(false)
 	{
 	}
 
 	session_key(const std::vector<unsigned char>& encrypted_key)
-	    : session_key()
 	{
-		init_decode(encrypted_key);
-		_needsDecrypt = true;
+		_needsDecrypt = init_decode(encrypted_key);
 	}
 
 	bool init_decode(const std::vector<unsigned char>& encrypted_key)
@@ -36,7 +35,7 @@ public:
 		if (encrypted_key.size() != _encryptedKey.size())
 			return false;
 
-		_encryptedKey = encrypted_key;
+		std::copy(encrypted_key.begin(), encrypted_key.end(), _encryptedKey.begin());
 		return true;
 	}
 
@@ -55,20 +54,20 @@ public:
 		return _encryptedKey.data();
 	}
 
-	const std::vector<unsigned char>& key() const
+	const KEY_ARRAY& key() const
 	{
 		return _key;
 	}
 
-	const std::vector<unsigned char>& encrypted_key() const
+	const ENCRYPTED_ARRAY& encrypted_key() const
 	{
 		return _encryptedKey;
 	}
 
 protected:
 	bool _needsDecrypt;
-	std::vector<unsigned char> _key;
-	std::vector<unsigned char> _encryptedKey;
+	KEY_ARRAY _key;
+	ENCRYPTED_ARRAY _encryptedKey;
 };
 
 }

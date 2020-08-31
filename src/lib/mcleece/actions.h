@@ -12,9 +12,9 @@
 
 namespace mcleece {
 namespace actions {
-	int generate_keypair(std::string keypath)
+	int generate_keypair(std::string keypath, std::string pw)
 	{
-		int res = mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath));
+		int res = mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
 		return res;
 	}
 
@@ -51,9 +51,9 @@ namespace actions {
 	}
 
 	template <typename OUTSTREAM>
-	int decrypt(std::string keypath, std::string infile, OUTSTREAM& os)
+	int decrypt(std::string keypath, std::string pw, std::string infile, OUTSTREAM& os)
 	{
-		mcleece::private_key secret(keypath);
+		mcleece::private_key secret(keypath, pw);
 
 		// ifstream's api is bad and I'd rather just use fread()
 		FILE* f = fopen(infile.c_str(), "rb");

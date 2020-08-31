@@ -66,7 +66,10 @@ int main(int argc, char** argv)
 	string command = result["command"].as<string>();
 
 	if (command == "generate-keypair")
-		return mcleece::actions::generate_keypair(fmt::format("{}/{}", key_path, id));
+	{
+		string pw = getpass("Secret key password");
+		return mcleece::actions::generate_keypair(fmt::format("{}/{}", key_path, id), pw);
+	}
 
 	if (command == "encrypt")
 	{
@@ -95,14 +98,15 @@ int main(int argc, char** argv)
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
 
+		string pw = getpass("Secret key password");
 		string output = result["output"].as<string>();
 		string key = fmt::format("{}/{}.sk", key_path, id);
 		if (output.empty())
-			return mcleece::actions::decrypt(key, input, std::cout);
+			return mcleece::actions::decrypt(key, pw, input, std::cout);
 		else
 		{
 			std::ofstream f(output, std::ofstream::binary);
-			return mcleece::actions::decrypt(key, input, f);
+			return mcleece::actions::decrypt(key, pw, input, f);
 		}
 	}
 

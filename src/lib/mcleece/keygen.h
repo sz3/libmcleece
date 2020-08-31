@@ -14,7 +14,7 @@ namespace mcleece
 		return crypto_kem_keypair(pubk.data(), secret.data());
 	}
 
-	inline int generate_keypair(std::string pubk_path, std::string secret_path)
+	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)
 	{
 		public_key pubk;
 		private_key secret;
@@ -23,7 +23,7 @@ namespace mcleece
 			return res;
 
 		pubk.save(pubk_path);
-		secret.save(secret_path);
+		secret.save(secret_path, pw);
 		return res;
 	}
 

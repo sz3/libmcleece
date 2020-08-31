@@ -3,7 +3,7 @@
 
 #include "sodium/crypto_secretbox.h"
 #include "sodium/randombytes.h"
-#include <vector>
+#include <array>
 
 namespace mcleece
 {
@@ -15,13 +15,11 @@ public:
 
 public:
 	nonce()
-	    : _data(SIZE)
 	{
 		randomize();
 	}
 
 	nonce(const char* data)
-	    : _data(SIZE)
 	{
 		std::copy(data, data+SIZE, _data.data());
 	}
@@ -42,7 +40,7 @@ public:
 	}
 
 protected:
-	std::vector<unsigned char> _data;
+	std::array<unsigned char, SIZE> _data;
 };
 
 }
