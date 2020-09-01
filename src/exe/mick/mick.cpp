@@ -3,6 +3,9 @@
 #include "mcleece/actions.h"
 
 #include "cxxopts/cxxopts.hpp"
+extern "C" {
+#include "getline/get_line.h"
+}
 #include <iostream>
 #include <fstream>
 #include <random>
@@ -21,6 +24,14 @@ namespace {
 	{
 	   char temp[1024];
 	   return ( getcwd(temp, sizeof(temp))? string(temp) : "" );
+	}
+
+	string get_pw()
+	{
+		string pw;
+		pw.resize(100);
+		get_password(pw.data(), pw.size(), "Enter secret key password: ");
+		return pw.c_str();
 	}
 
 	int help(const cxxopts::Options& options, string errormsg="")
@@ -67,7 +78,7 @@ int main(int argc, char** argv)
 
 	if (command == "generate-keypair")
 	{
-		string pw = getpass("Secret key password");
+		string pw = get_pw();
 		return mcleece::actions::generate_keypair(fmt::format("{}/{}", key_path, id), pw);
 	}
 
@@ -98,7 +109,7 @@ int main(int argc, char** argv)
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
 
-		string pw = getpass("Secret key password");
+		string pw = get_pw();
 		string output = result["output"].as<string>();
 		string key = fmt::format("{}/{}.sk", key_path, id);
 		if (output.empty())

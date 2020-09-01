@@ -83,6 +83,8 @@ namespace actions {
 
 		// decrypt the message
 		std::string message = mcleece::decrypt(enc_session, rec_ciphertext, enc_n);
+		if (message.empty())
+			return 120;
 		os << message;
 		return 0;
 	}

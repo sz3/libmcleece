@@ -16,6 +16,7 @@ target_link_libraries(mick
 	mceliece8192128
 
 	crypto
+	getline
 	keccak
 	sodium
 	ssl
