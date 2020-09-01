@@ -88,7 +88,7 @@ get_line(char *line, size_t max_len, const char *prompt)
     if (max_len < 2U || max_len > INT_MAX) {
         return -1;
     }
-    xfprintf(stderr, "%s", prompt);
+    fprintf(stderr, "%s", prompt);
     fflush(stderr);
     if (fgets(line, (int) max_len, stdin) == NULL) {
         return -1;

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "mceliece8192128/crypto_kem.h"
+#include "util/File.h"
 
 #include "sodium/crypto_pwhash_scryptsalsa208sha256.h"
 #include "sodium/randombytes.h"
@@ -51,8 +52,6 @@ public:
 
 	bool save(const std::string& filename, const std::string& pw) const
 	{
-		std::ofstream f(filename);
-
 		// random salt
 		SALT_ARRAY salt;
 		randombytes(salt.data(), salt.size());
@@ -66,6 +65,7 @@ public:
 		for (int i = 0; i < blob.size(); ++i)
 			blob[i] ^= _data[i];
 
+		File f(filename, true, 0600);
 		f.write(reinterpret_cast<const char*>(salt.data()), salt.size());
 		f.write(reinterpret_cast<const char*>(blob.data()), blob.size());
 		return true;
