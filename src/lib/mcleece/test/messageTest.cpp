@@ -1,7 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "mcleece/keygen.h"
 #include "mcleece/message.h"
 
 #include "util/MakeTempDirectory.h"
@@ -16,7 +15,7 @@ TEST_CASE( "messageTest/testRoundtrip", "[unit]" )
 {
 	MakeTempDirectory tempdir;
 
-	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
+	TestHelpers::generate_keypair(tempdir.path() / "test");
 	mcleece::public_key pubk(tempdir.path() / "test.pk");
 	mcleece::private_key secret(tempdir.path() / "test.sk", "password");
 

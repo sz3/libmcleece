@@ -2,8 +2,6 @@
 #include "unittest.h"
 
 #include "mcleece/actions.h"
-
-#include "mcleece/keygen.h"
 #include "mcleece/message.h"
 
 #include "util/MakeTempDirectory.h"
@@ -20,7 +18,7 @@ TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 {
 	MakeTempDirectory tempdir;
 
-	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
+	TestHelpers::generate_keypair(tempdir.path() / "test");
 	mcleece::public_key pubk(tempdir.path() / "test.pk");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
@@ -43,7 +41,7 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 {
 	MakeTempDirectory tempdir;
 
-	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
+	TestHelpers::generate_keypair(tempdir.path() / "test");
 	mcleece::private_key secret(tempdir.path() / "test.sk", "password");
 
 	{
@@ -71,7 +69,7 @@ TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 {
 	MakeTempDirectory tempdir;
 
-	mcleece::generate_keypair(tempdir.path() / "test.pk", tempdir.path() / "test.sk", "password");
+	TestHelpers::generate_keypair(tempdir.path() / "test");
 
 	{
 		std::ofstream f(tempdir.path() / "helloworld");
