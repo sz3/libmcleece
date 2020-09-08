@@ -41,12 +41,14 @@ public:
 	{
 		std::ofstream f(filename, std::ios::binary);
 		f.write(reinterpret_cast<const char*>(_data.data()), _data.size());
+		return true;
 	}
 
 	bool load(const std::string& filename)
 	{
 		std::ifstream f(filename, std::ios::binary);
 		f.read(reinterpret_cast<char*>(_data.data()), _data.size());
+		return true;
 	}
 
 protected:
