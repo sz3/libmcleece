@@ -30,7 +30,7 @@ namespace actions {
 		char buff[8192];
 		size_t last_read = 0;
 		std::string data;
-		while (last_read = fread(buff, 1, 8192, f))
+		while ((last_read = fread(buff, 1, 8192, f)))
 		{
 			data.append(std::string(buff, buff+last_read));
 			if (last_read < 8192)
@@ -74,7 +74,7 @@ namespace actions {
 
 		// read the message bytes
 		std::string rec_ciphertext;
-		while (last_read = fread(buff, 1, 8192, f))
+		while ((last_read = fread(buff, 1, 8192, f)))
 		{
 			rec_ciphertext.append(std::string(buff, buff+last_read));
 			if (last_read < 8192)
