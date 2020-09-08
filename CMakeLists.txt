@@ -14,10 +14,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fpic")
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
-        set(CPPFILESYSTEM "stdc++fs")
-    endif()
+if(NOT DEFINED CPPFILESYSTEM)
+    set(CPPFILESYSTEM "stdc++fs")
 endif()
 
 set (PROJECTS
