@@ -30,9 +30,8 @@ namespace {
 	{
 		string pw;
 		pw.resize(100);
-		int len = get_password(pw.data(), pw.size(), "Enter secret key password: ");
-		pw.resize(len);
-		return pw;
+		get_password(pw.data(), pw.size(), "Enter secret key password: ");
+		return pw.c_str();
 	}
 
 	int help(const cxxopts::Options& options, string errormsg="")
