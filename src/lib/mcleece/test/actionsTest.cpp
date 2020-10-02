@@ -5,6 +5,8 @@
 #include "mcleece/message.h"
 
 #include "util/MakeTempDirectory.h"
+
+#include "PicoSHA2/picosha2.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -13,6 +15,15 @@
 using std::string;
 using namespace std;
 
+namespace {
+	std::string get_hash(std::string filename)
+	{
+		std::ifstream f(filename, std::ios::binary);
+		std::vector<unsigned char> hash(picosha2::k_digest_size);
+		picosha2::hash256(f, hash.begin(), hash.end());
+		return picosha2::bytes_to_hex_string(hash);
+	}
+}
 
 TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 {
@@ -64,7 +75,6 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 	assertEquals( "hello friends", message );
 }
 
-
 TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 {
 	MakeTempDirectory tempdir;
@@ -84,6 +94,33 @@ TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 	std::stringstream ss;
 	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), ss));
 	assertEquals( "hello friends", ss.str() );
+}
+
+TEST_CASE( "actionsTest/testRoundtrip.BigFile", "[unit]" )
+{
+	MakeTempDirectory tempdir;
+
+	TestHelpers::generate_keypair(tempdir.path() / "test");
+
+	{
+		std::ofstream f(tempdir.path() / "bigfile");
+		const unsigned size = 10000000;
+		for (int i = 0; i < size; i+=10)
+			f << "0123456789";
+	}
+
+	{
+		std::ofstream f(tempdir.path() / "encrypted_msg");
+		assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "bigfile"), f) );
+	}
+
+	{
+		std::ofstream f(tempdir.path() / "decrypted");
+		assertEquals( 0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), f) );
+	}
+
+	string actual = get_hash(tempdir.path() / "decrypted");
+	assertEquals("d52fcc26b48dbd4d79b125eb0a29b803ade07613c67ac7c6f2751aefef008486", actual);
 }
 
 

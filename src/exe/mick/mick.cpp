@@ -91,14 +91,14 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 
 		string key = fmt::format("{}/{}.pk", key_path, id);
-		std::ifstream istream(input, std::ifstream::binary);
+		std::ifstream istream(input, std::ios::binary);
 		string output = result["output"].as<string>();
 
 		if (output.empty())
 			return mcleece::actions::encrypt(key, istream, std::cout);
 		else
 		{
-			std::ofstream f(output, std::ofstream::binary);
+			std::ofstream f(output, std::ios::binary);
 			return mcleece::actions::encrypt(key, istream, f);
 		}
 	}
@@ -113,14 +113,14 @@ int main(int argc, char** argv)
 
 		string key = fmt::format("{}/{}.sk", key_path, id);
 		string pw = get_pw();
-		std::ifstream istream(input, std::ifstream::binary);
+		std::ifstream istream(input, std::ios::binary);
 		string output = result["output"].as<string>();
 
 		if (output.empty())
 			return mcleece::actions::decrypt(key, pw, istream, std::cout);
 		else
 		{
-			std::ofstream f(output, std::ofstream::binary);
+			std::ofstream f(output, std::ios::binary);
 			return mcleece::actions::decrypt(key, pw, istream, f);
 		}
 	}
