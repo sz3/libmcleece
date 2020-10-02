@@ -51,6 +51,8 @@ namespace actions {
 			if (ciphertext.empty())
 				return 200;
 			os << ciphertext;
+
+			++n;
 		}
 		return 0;
 	}
@@ -96,6 +98,8 @@ namespace actions {
 			if (message.empty())
 				return 200;
 			os << message;
+
+			++enc_n;
 		}
 		return 0;
 	}
