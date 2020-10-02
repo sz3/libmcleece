@@ -33,7 +33,7 @@ TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 	}
 
 	std::stringstream ss;
-	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", tempdir.path() / "encrypted_msg", ss));
+	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), ss));
 	assertEquals( "hello world", ss.str() );
 }
 
@@ -50,7 +50,7 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 	}
 
 	std::stringstream ss;
-	assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", tempdir.path() / "helloworld", ss) );
+	assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "helloworld"), ss) );
 
 	std::string enc_message = ss.str();
 	auto session_nonce = mcleece::decode_session(secret, enc_message);
@@ -78,11 +78,11 @@ TEST_CASE( "actionsTest/testRoundtrip", "[unit]" )
 
 	{
 		std::ofstream f(tempdir.path() / "encrypted_msg");
-		assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", tempdir.path() / "helloworld", f) );
+		assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "helloworld"), f) );
 	}
 
 	std::stringstream ss;
-	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", tempdir.path() / "encrypted_msg", ss));
+	assertEquals(0, mcleece::actions::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), ss));
 	assertEquals( "hello friends", ss.str() );
 }
 
