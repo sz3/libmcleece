@@ -4,88 +4,103 @@
 #include "keygen.h"
 #include "message.h"
 
-#include "base64/base.hpp"
 #include "serialize/format.h"
-#include <cstdio>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace mcleece {
 namespace actions {
+	const int MAX_MESSAGE_LENGTH = 0x100000;
+
 	int generate_keypair(std::string keypath, std::string pw)
 	{
 		int res = mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
 		return res;
 	}
 
-	template <typename OUTSTREAM>
-	int encrypt(std::string keypath, std::string infile, OUTSTREAM& os)
+	template <typename INSTREAM, typename OUTSTREAM>
+	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os)
 	{
 		mcleece::public_key pubk(keypath);
 
-		FILE* f = fopen(infile.c_str(), "rb");
-		if (f == NULL)
+		if (!is)
 			return 104;
 
-		char buff[8192];
-		size_t last_read = 0;
-		std::string data;
-		while ((last_read = fread(buff, 1, 8192, f)))
-		{
-			data.append(std::string(buff, buff+last_read));
-			if (last_read < 8192)
-				break;
-		}
-
-		// limit is arbitrarily set at ~50MB. For files larger than that, chunk them up into multiple messages
+		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
+		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
 		mcleece::session_key session = mcleece::generate_session_key(pubk);
 		mcleece::nonce n;
 
-		std::string ciphertext = mcleece::encrypt(session, data, n);
-		if (ciphertext.empty())
-			return 200;
-
+		// store session data first
 		std::string sessiontext = mcleece::encode_session(session, n);
-		os << sessiontext << ciphertext;
+		os << sessiontext;
+
+		// encrypt each chunk
+		std::string data;
+		while (is)
+		{
+			data.resize(MAX_MESSAGE_LENGTH);
+			is.read(data.data(), data.size());
+			size_t last_read = is.gcount();
+
+			if (last_read < data.size())
+				data.resize(last_read);
+
+			std::string ciphertext = mcleece::encrypt(session, data, n);
+			if (ciphertext.empty())
+				return 200;
+			os << ciphertext;
+
+			++n;
+		}
 		return 0;
 	}
 
-	template <typename OUTSTREAM>
-	int decrypt(std::string keypath, std::string pw, std::string infile, OUTSTREAM& os)
+	template <typename INSTREAM, typename OUTSTREAM>
+	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os)
 	{
 		mcleece::private_key secret(keypath, pw);
 
-		// ifstream's api is bad and I'd rather just use fread()
-		FILE* f = fopen(infile.c_str(), "rb");
-		if (f == NULL)
+		if (!is)
 			return 104;
 
-		// extract the session from the front of the file
-		char buff[8192];
-		size_t last_read = fread(buff, 1, mcleece::encoded_session_size(), f);
-		if (last_read < mcleece::encoded_session_size())
+		std::string data;
+		size_t last_read;
+
+		// extract the session from the front of the input
+		data.resize(mcleece::encoded_session_size());
+		is.read(data.data(), data.size());
+		last_read = is.gcount();
+
+		if (!is or last_read < data.size())
 			return 110;
-		auto session_nonce = mcleece::decode_session(secret, buff, last_read);
+		auto session_nonce = mcleece::decode_session(secret, data.data(), mcleece::encoded_session_size());
 		if (!session_nonce)
 			return 111;
 
 		mcleece::session_key& enc_session = session_nonce->first;
 		mcleece::nonce& enc_n = session_nonce->second;
 
-		// read the message bytes
-		std::string rec_ciphertext;
-		while ((last_read = fread(buff, 1, 8192, f)))
+		// extract the message bytes
+		const int MAX_CIPHERTEXT_LENGTH = MAX_MESSAGE_LENGTH + crypto_secretbox_MACBYTES;
+		while (is)
 		{
-			rec_ciphertext.append(std::string(buff, buff+last_read));
-			if (last_read < 8192)
-				break;
-		}
+			data.resize(MAX_CIPHERTEXT_LENGTH);
+			is.read(data.data(), data.size());
+			last_read = is.gcount();
 
-		// decrypt the message
-		std::string message = mcleece::decrypt(enc_session, rec_ciphertext, enc_n);
-		if (message.empty())
-			return 120;
-		os << message;
+			if (last_read < data.size())
+				data.resize(last_read);
+
+			// decrypt the message
+			std::string message = mcleece::decrypt(enc_session, data, enc_n);
+			if (message.empty())
+				return 200;
+			os << message;
+
+			++enc_n;
+		}
 		return 0;
 	}
 }}

@@ -90,14 +90,16 @@ int main(int argc, char** argv)
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
 
-		string output = result["output"].as<string>();
 		string key = fmt::format("{}/{}.pk", key_path, id);
+		std::ifstream istream(input, std::ios::binary);
+		string output = result["output"].as<string>();
+
 		if (output.empty())
-			return mcleece::actions::encrypt(key, input, std::cout);
+			return mcleece::actions::encrypt(key, istream, std::cout);
 		else
 		{
-			std::ofstream f(output, std::ofstream::binary);
-			return mcleece::actions::encrypt(key, input, f);
+			std::ofstream f(output, std::ios::binary);
+			return mcleece::actions::encrypt(key, istream, f);
 		}
 	}
 
@@ -109,15 +111,17 @@ int main(int argc, char** argv)
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
 
-		string pw = get_pw();
-		string output = result["output"].as<string>();
 		string key = fmt::format("{}/{}.sk", key_path, id);
+		string pw = get_pw();
+		std::ifstream istream(input, std::ios::binary);
+		string output = result["output"].as<string>();
+
 		if (output.empty())
-			return mcleece::actions::decrypt(key, pw, input, std::cout);
+			return mcleece::actions::decrypt(key, pw, istream, std::cout);
 		else
 		{
-			std::ofstream f(output, std::ofstream::binary);
-			return mcleece::actions::decrypt(key, pw, input, f);
+			std::ofstream f(output, std::ios::binary);
+			return mcleece::actions::decrypt(key, pw, istream, f);
 		}
 	}
 

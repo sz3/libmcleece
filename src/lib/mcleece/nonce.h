@@ -39,6 +39,20 @@ public:
 		return _data.size();
 	}
 
+	nonce& operator++()
+	{
+		// could also do this by going <-> an int, but this is probably more straightforward?
+		for (int i = _data.size()-1; i >= 0; --i)
+		{
+			unsigned char temp = _data[i];
+			if (++_data[i] > temp)
+				break; // if no overflow, we're done
+			else if (i == 0)
+				_data = {0};
+		}
+		return *this;
+	}
+
 protected:
 	std::array<unsigned char, SIZE> _data;
 };
