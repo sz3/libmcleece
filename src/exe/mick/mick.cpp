@@ -46,7 +46,7 @@ namespace {
 
 int main(int argc, char** argv)
 {
-	cxxopts::Options options("mickly", "Encrypt and decrypt using Classic McEliece");
+	cxxopts::Options options("mick", "Encrypt and decrypt using Classic McEliece");
 
 	// password passed on stdin!
 	options.add_options()
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
 	    ("id", "Identity (basename) of keypair", cxxopts::value<string>()->default_value(""))
-	    ("base64", "Treat ciphertext as base64 encoded (default: off)", cxxopts::value<bool>())
+	    ("b,binary", "Treat ciphertext as binary, not base64 encoded (default: base64)", cxxopts::value<bool>())
 	    ("keypair-path", "Path to keypair (default: cwd)", cxxopts::value<string>())
 	    ("h,help", "Print usage")
 	;
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 	if (result.count("help") or !result.count("command"))
 		return help(options);
 
-	bool b64 = result.count("base64");
+	bool b64 = !result.count("binary");
 
 	string key_path = get_working_path();
 	if (result.count("keypair-path"))
