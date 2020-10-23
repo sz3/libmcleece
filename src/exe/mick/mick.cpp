@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
 	    ("id", "Identity (basename) of keypair", cxxopts::value<string>()->default_value(""))
-	    ("b64,base64", "Treat ciphertext as base64 encoded (default: off)", cxxopts::value<string>())
+	    ("base64", "Treat ciphertext as base64 encoded (default: off)", cxxopts::value<bool>())
 	    ("keypair-path", "Path to keypair (default: cwd)", cxxopts::value<string>())
 	    ("h,help", "Print usage")
 	;
