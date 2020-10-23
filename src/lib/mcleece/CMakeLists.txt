@@ -33,7 +33,10 @@ target_link_libraries(mcleece_static
 
 target_link_libraries(mcleece
 
-	mcleece_static
+	mceliece8192128
+
+	getline
+	keccak
 )
 
 install(
