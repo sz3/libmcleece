@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(SOURCES
+	api.cpp
+	api.h
+
 	actions.h
 	keygen.h
 	message.h
@@ -10,6 +13,6 @@ set(SOURCES
 	session_key.h
 )
 
-add_library(mcleece INTERFACE)
+add_library(mcleece STATIC ${SOURCES})
 
 add_subdirectory(test)
