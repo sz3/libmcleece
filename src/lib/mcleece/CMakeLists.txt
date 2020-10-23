@@ -41,6 +41,7 @@ target_link_libraries(mcleece
 
 install(
 	TARGETS mcleece
-	DESTINATION bin
+	LIBRARY DESTINATION lib
+	PUBLIC_HEADER DESTINATION include
 )
 
