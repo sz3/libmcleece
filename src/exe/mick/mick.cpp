@@ -1,6 +1,8 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 
 #include "mcleece/actions.h"
+#include "serialize/b64_instream.h"
+#include "serialize/b64_outstream.h"
 
 #include "cxxopts/cxxopts.hpp"
 extern "C" {
@@ -53,6 +55,7 @@ int main(int argc, char** argv)
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
 	    ("id", "Identity (basename) of keypair", cxxopts::value<string>()->default_value(""))
+	    ("base64", "Treat ciphertext as base64 encoded (default: off)", cxxopts::value<bool>())
 	    ("keypair-path", "Path to keypair (default: cwd)", cxxopts::value<string>())
 	    ("h,help", "Print usage")
 	;
@@ -63,6 +66,8 @@ int main(int argc, char** argv)
 	auto result = options.parse(argc, argv);
 	if (result.count("help") or !result.count("command"))
 		return help(options);
+
+	bool b64 = result.count("base64");
 
 	string key_path = get_working_path();
 	if (result.count("keypair-path"))
@@ -95,11 +100,21 @@ int main(int argc, char** argv)
 		string output = result["output"].as<string>();
 
 		if (output.empty())
-			return mcleece::actions::encrypt(key, istream, std::cout);
+		{
+			if (!b64)
+				return mcleece::actions::encrypt(key, istream, std::cout);
+
+			b64_outstream bo(std::cout);
+			return mcleece::actions::encrypt(key, istream, bo);
+		}
 		else
 		{
 			std::ofstream f(output, std::ios::binary);
-			return mcleece::actions::encrypt(key, istream, f);
+			if (!b64)
+				return mcleece::actions::encrypt(key, istream, f);
+
+			b64_outstream bo(f);
+			return mcleece::actions::encrypt(key, istream, bo);
 		}
 	}
 
@@ -114,14 +129,21 @@ int main(int argc, char** argv)
 		string key = fmt::format("{}/{}.sk", key_path, id);
 		string pw = get_pw();
 		std::ifstream istream(input, std::ios::binary);
+		b64_instream bi(istream);
 		string output = result["output"].as<string>();
 
 		if (output.empty())
-			return mcleece::actions::decrypt(key, pw, istream, std::cout);
+		{
+			if (!b64)
+				return mcleece::actions::decrypt(key, pw, istream, std::cout);
+			return mcleece::actions::decrypt(key, pw, bi, std::cout);
+		}
 		else
 		{
 			std::ofstream f(output, std::ios::binary);
-			return mcleece::actions::decrypt(key, pw, istream, f);
+			if (!b64)
+				return mcleece::actions::decrypt(key, pw, istream, f);
+			return mcleece::actions::decrypt(key, pw, bi, f);
 		}
 	}
 
