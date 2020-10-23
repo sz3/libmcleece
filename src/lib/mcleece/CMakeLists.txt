@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+add_subdirectory(test)
+
 set(SOURCES
 	mcleece.cpp
 	mcleece.h
@@ -13,10 +15,11 @@ set(SOURCES
 	session_key.h
 )
 
-add_library(mcleece STATIC ${SOURCES})
+add_library(mcleece_static STATIC ${SOURCES})
+add_library(mcleece SHARED ${SOURCES})
 set_target_properties(mcleece PROPERTIES PUBLIC_HEADER mcleece.h)
 
-target_link_libraries(mcleece
+target_link_libraries(mcleece_static
 
 	mceliece8192128
 
@@ -28,4 +31,13 @@ target_link_libraries(mcleece
 	ssl
 )
 
-add_subdirectory(test)
+target_link_libraries(mcleece
+
+	mcleece_static
+)
+
+install(
+	TARGETS mcleece
+	DESTINATION bin
+)
+

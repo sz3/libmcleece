@@ -13,7 +13,7 @@ add_executable (
 
 target_link_libraries(mick
 
-	mcleece
+	mcleece_static
 )
 
 add_custom_command(
