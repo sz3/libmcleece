@@ -14,7 +14,6 @@ set(SOURCES
 	public_key.h
 	session_key.h
 )
-set_target_properties(mcleece PROPERTIES PUBLIC_HEADER mcleece.h)
 
 add_library(mcleece_static STATIC ${SOURCES})
 add_library(mcleece SHARED ${SOURCES})
@@ -38,6 +37,8 @@ target_link_libraries(mcleece
 	getline
 	keccak
 )
+
+set_target_properties(mcleece PROPERTIES PUBLIC_HEADER mcleece.h)
 
 install(
 	TARGETS mcleece
