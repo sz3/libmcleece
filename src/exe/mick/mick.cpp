@@ -1,8 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 
-#include "mcleece/actions.h"
-#include "serialize/b64_instream.h"
-#include "serialize/b64_outstream.h"
+#include "mcleece/mcleece.h"
+#include "serialize/format.h"
 
 #include "cxxopts/cxxopts.hpp"
 extern "C" {
@@ -47,7 +46,7 @@ namespace {
 
 int main(int argc, char** argv)
 {
-	cxxopts::Options options("mickly", "Encrypt and decrypt using Classic McEliece");
+	cxxopts::Options options("mick", "Encrypt and decrypt using Classic McEliece");
 
 	// password passed on stdin!
 	options.add_options()
@@ -55,7 +54,7 @@ int main(int argc, char** argv)
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
 	    ("id", "Identity (basename) of keypair", cxxopts::value<string>()->default_value(""))
-	    ("base64", "Treat ciphertext as base64 encoded (default: off)", cxxopts::value<bool>())
+	    ("b,binary", "Treat ciphertext as binary, not base64 encoded (default: base64)", cxxopts::value<bool>())
 	    ("keypair-path", "Path to keypair (default: cwd)", cxxopts::value<string>())
 	    ("h,help", "Print usage")
 	;
@@ -67,7 +66,7 @@ int main(int argc, char** argv)
 	if (result.count("help") or !result.count("command"))
 		return help(options);
 
-	bool b64 = result.count("base64");
+	bool b64 = !result.count("binary");
 
 	string key_path = get_working_path();
 	if (result.count("keypair-path"))
@@ -83,8 +82,9 @@ int main(int argc, char** argv)
 
 	if (command == "generate-keypair")
 	{
+		string full_keypath = fmt::format("{}/{}", key_path, id);
 		string pw = get_pw();
-		return mcleece::actions::generate_keypair(fmt::format("{}/{}", key_path, id), pw);
+		return mcleece_generate_keypair(full_keypath.data(), full_keypath.size(), pw.data(), pw.size());
 	}
 
 	if (command == "encrypt")
@@ -96,26 +96,13 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 
 		string key = fmt::format("{}/{}.pk", key_path, id);
-		std::ifstream istream(input, std::ios::binary);
 		string output = result["output"].as<string>();
+		int flags = b64? mcleece_flag_base64 : 0;
 
 		if (output.empty())
-		{
-			if (!b64)
-				return mcleece::actions::encrypt(key, istream, std::cout);
-
-			b64_outstream bo(std::cout);
-			return mcleece::actions::encrypt(key, istream, bo);
-		}
+			return mcleece_encrypt_stdout(key.data(), key.size(), input.data(), input.size(), flags);
 		else
-		{
-			std::ofstream f(output, std::ios::binary);
-			if (!b64)
-				return mcleece::actions::encrypt(key, istream, f);
-
-			b64_outstream bo(f);
-			return mcleece::actions::encrypt(key, istream, bo);
-		}
+			return mcleece_encrypt(key.data(), key.size(), input.data(), input.size(), output.data(), output.size(), flags);
 	}
 
 	else if (command == "decrypt")
@@ -128,23 +115,13 @@ int main(int argc, char** argv)
 
 		string key = fmt::format("{}/{}.sk", key_path, id);
 		string pw = get_pw();
-		std::ifstream istream(input, std::ios::binary);
-		b64_instream bi(istream);
 		string output = result["output"].as<string>();
+		int flags = b64? mcleece_flag_base64 : 0;
 
 		if (output.empty())
-		{
-			if (!b64)
-				return mcleece::actions::decrypt(key, pw, istream, std::cout);
-			return mcleece::actions::decrypt(key, pw, bi, std::cout);
-		}
+			return mcleece_decrypt_stdout(key.data(), key.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
 		else
-		{
-			std::ofstream f(output, std::ios::binary);
-			if (!b64)
-				return mcleece::actions::decrypt(key, pw, istream, f);
-			return mcleece::actions::decrypt(key, pw, bi, f);
-		}
+			return mcleece_decrypt(key.data(), key.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
 	}
 
 	else

@@ -5,6 +5,7 @@ project(mcleece_test)
 set (SOURCES
 	test.cpp
 	actionsTest.cpp
+	apiTest.cpp
 	messageTest.cpp
 	private_keyTest.cpp
 )
@@ -24,12 +25,7 @@ add_test(mcleece_test mcleece_test)
 
 target_link_libraries(mcleece_test
 
-	mceliece8192128
-
-	crypto
-	keccak
-	sodium
-	ssl
+	mcleece_static
 	${CPPFILESYSTEM}
 )
 

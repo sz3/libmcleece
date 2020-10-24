@@ -1,3 +1,4 @@
+/* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
 #include "base64/base.hpp"
@@ -10,7 +11,7 @@ class b64_outstream
 {
 public:
 	b64_outstream(OUTSTREAM& stream)
-		: _stream(stream)
+	    : _stream(stream)
 	{}
 
 	~b64_outstream()
