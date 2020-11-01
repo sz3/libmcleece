@@ -5,7 +5,6 @@
 #include "nonce.h"
 #include "session_key.h"
 
-#include "base64/base.hpp"
 #include "sodium/crypto_secretbox.h"
 #include <iostream>
 #include <optional>

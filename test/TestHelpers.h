@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mcleece/keygen.h"
+#include "mcleece/actions.h"
 #include "serialize/format.h"
 #include "util/File.h"
 #include <experimental/filesystem>
@@ -20,7 +20,7 @@ namespace TestHelpers
 			return false;
 		}
 		else
-			mcleece::generate_keypair(target_prefix.replace_extension(".pk"), target_prefix.replace_extension(".sk"), "password");
+			mcleece::actions::generate_keypair(target_prefix, "password");
 		return true;
 	}
 }
