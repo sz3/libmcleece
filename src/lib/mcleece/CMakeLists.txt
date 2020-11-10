@@ -38,6 +38,12 @@ target_link_libraries(mcleece
 	keccak
 )
 
+add_custom_command(
+	TARGET mcleece POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mcleece> mcleece.dbg
+	COMMAND ${CMAKE_STRIP} -g $<TARGET_FILE:mcleece>
+)
+
 set_target_properties(mcleece PROPERTIES PUBLIC_HEADER mcleece.h)
 
 install(

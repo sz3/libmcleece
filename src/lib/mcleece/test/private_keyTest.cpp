@@ -16,7 +16,7 @@ TEST_CASE( "private_keyTest/testSaveLoad", "[unit]" )
 	MakeTempDirectory tempdir;
 
 	mcleece::private_key sec;
-	for (int i = 0; i < sec.size(); ++i)
+	for (unsigned i = 0; i < sec.size(); ++i)
 		sec.data()[i] = 48 + (i % 10);
 
 	assertTrue( sec.save(tempdir.path() / "foo.sk", "password") );

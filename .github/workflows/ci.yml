@@ -1,0 +1,58 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+        - name: "linux gcc7"
+          os: ubuntu-18.04
+          cc: "gcc-7"
+          cxx: "g++-7"
+        - name: "linux clang"
+          os: ubuntu-18.04
+          cc: "clang"
+          cxx: "clang++"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt-get install libssl-dev libsodium-dev
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: CXX=${{ matrix.config.cxx }} CC=${{ matrix.config.cc }} cmake $GITHUB_WORKSPACE
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      run: make -j2 && make install
+
+    - name: Setup tests
+      working-directory: ${{runner.workspace}}/libmcleece
+      shell: bash
+      run: (cd dist/bin/ && (echo "password" | ./mick generate-keypair --keypair-path=/tmp) && mv /tmp/identity.pk /tmp/test.pk && mv /tmp/identity.sk /tmp/test.sk)
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      run: make test CTEST_OUTPUT_ON_FAILURE=TRUE
+
+  cppcheck:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt-get install cppcheck
+
+    - name: run cppcheck
+      run: cppcheck src/
+

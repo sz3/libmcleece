@@ -33,14 +33,14 @@ namespace mcleece
 	inline session_key generate_session_key(const public_key& pubk)
 	{
 		session_key key;
-		int res = crypto_kem_enc(key.encrypted_key_data(), key.key_data(), pubk.data());
+		crypto_kem_enc(key.encrypted_key_data(), key.key_data(), pubk.data());
 		return key;
 	}
 
 	inline session_key decode_session_key(const private_key& secret, const std::vector<unsigned char>& encrypted_key)
 	{
 		session_key key(encrypted_key);
-		int res = crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret.data());
+		crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret.data());
 		return key;
 	}
 }

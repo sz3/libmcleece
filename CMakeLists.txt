@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 	set(CMAKE_C_FLAGS "${CFLAGS} -Wall -std=c99 -Os -fPIC")
-	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fPIC")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wall -g -O2 -fPIC")
 endif()
 
 if(NOT DEFINED CPPFILESYSTEM)
@@ -19,7 +19,6 @@ if(NOT DEFINED CPPFILESYSTEM)
 endif()
 
 set (PROJECTS
-	src/exe/cmc
 	src/exe/mick
 
 	src/lib/mcleece

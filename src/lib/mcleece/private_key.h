@@ -62,7 +62,7 @@ public:
 			return false;
 
 		// xor our underlying data into it
-		for (int i = 0; i < blob.size(); ++i)
+		for (unsigned i = 0; i < blob.size(); ++i)
 			blob[i] ^= _data[i];
 
 		File f(filename, true, 0600);
@@ -88,7 +88,7 @@ public:
 			return false;
 
 		// xor it with the data blob to get our real data back
-		for (int i = 0; i < _data.size(); ++i)
+		for (unsigned i = 0; i < _data.size(); ++i)
 			_data[i] ^= blob[i];
 		return true;
 	}

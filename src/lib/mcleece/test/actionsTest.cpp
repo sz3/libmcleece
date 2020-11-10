@@ -105,7 +105,7 @@ TEST_CASE( "actionsTest/testRoundtrip.BigFile", "[unit]" )
 	{
 		std::ofstream f(tempdir.path() / "bigfile");
 		const unsigned size = 10000000;
-		for (int i = 0; i < size; i+=10)
+		for (unsigned i = 0; i < size; i+=10)
 			f << "0123456789";
 	}
 
