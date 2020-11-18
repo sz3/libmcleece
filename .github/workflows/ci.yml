@@ -38,7 +38,7 @@ jobs:
     - name: Setup tests
       working-directory: ${{runner.workspace}}/libmcleece
       shell: bash
-      run: (cd dist/bin/ && (echo "password" | ./mick generate-keypair --keypair-path=/tmp) && mv /tmp/identity.pk /tmp/test.pk && mv /tmp/identity.sk /tmp/test.sk)
+      run: (cd dist/bin/ && (echo "password" | ./mick generate-keypair --key-path=/tmp) && mv /tmp/identity.pk /tmp/test.pk && mv /tmp/identity.sk /tmp/test.sk)
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
