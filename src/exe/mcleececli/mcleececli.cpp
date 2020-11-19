@@ -54,7 +54,7 @@ namespace {
 
 int main(int argc, char** argv)
 {
-	cxxopts::Options options("mick", "Encrypt and decrypt using Classic McEliece");
+	cxxopts::Options options("mcleececli", "Encrypt and decrypt using Classic McEliece");
 
 	// password passed on stdin!
 	options.add_options()
