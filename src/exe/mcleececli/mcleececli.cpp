@@ -21,6 +21,14 @@ namespace {
 		return access(path.c_str(), F_OK) != -1;
 	}
 
+	std::string parent_path(string path)
+	{
+		size_t i = path.find_last_of('/');
+		if (i == std::string::npos)
+			return "";
+		return path.substr(0, i);
+	}
+
 	std::string get_working_path()
 	{
 	   char temp[1024];
@@ -46,16 +54,15 @@ namespace {
 
 int main(int argc, char** argv)
 {
-	cxxopts::Options options("mick", "Encrypt and decrypt using Classic McEliece");
+	cxxopts::Options options("mcleececli", "Encrypt and decrypt using Classic McEliece");
 
 	// password passed on stdin!
 	options.add_options()
 	    ("command", "encrypt|decrypt|generate-keypair", cxxopts::value<string>())
+	    ("k,key-path", "Path to key or keypair (default: {cwd}/identity)", cxxopts::value<string>())
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
-	    ("id", "Identity (basename) of keypair", cxxopts::value<string>()->default_value(""))
 	    ("b,binary", "Treat ciphertext as binary, not base64 encoded (default: base64)", cxxopts::value<bool>())
-	    ("keypair-path", "Path to keypair (default: cwd)", cxxopts::value<string>())
 	    ("h,help", "Print usage")
 	;
 	options.parse_positional({"command", "input", "output"});
@@ -68,60 +75,70 @@ int main(int argc, char** argv)
 
 	bool b64 = !result.count("binary");
 
-	string key_path = get_working_path();
-	if (result.count("keypair-path"))
-		key_path = result["keypair-path"].as<string>();
-	if (key_path.empty() or !exists(key_path))
-		return help(options, "Specified keypair-path is not an accessible path!");
-
-	string id = result["id"].as<string>();
-	if (id.empty())
-		id = "identity";
+	bool autokey = true;
+	string key_path = fmt::format("{}/{}", get_working_path(), "identity");
+	if (result.count("key-path"))
+	{
+		key_path = result["key-path"].as<string>();
+		autokey = false;
+	}
+	if (key_path.empty())
+		return help(options, "No key-path specified!");
 
 	string command = result["command"].as<string>();
 
 	if (command == "generate-keypair")
 	{
-		string full_keypath = fmt::format("{}/{}", key_path, id);
+		if (!exists(parent_path(key_path)))
+			return help(options, "key-path is not a writable prefix!");
+
 		string pw = get_pw();
-		return mcleece_generate_keypair(full_keypath.data(), full_keypath.size(), pw.data(), pw.size());
+		return mcleece_generate_keypair(key_path.data(), key_path.size(), pw.data(), pw.size());
 	}
 
 	if (command == "encrypt")
 	{
+		if (autokey)
+			key_path += ".pk";
+		if (!exists(key_path))
+			return help(options, "key-path is not an accessible path!");
+
 		string input = result["input"].as<string>();
 		if (input.empty())
 			return help(options, "Please specify an input file!");
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
 
-		string key = fmt::format("{}/{}.pk", key_path, id);
 		string output = result["output"].as<string>();
 		int flags = b64? mcleece_flag_base64 : 0;
 
 		if (output.empty())
-			return mcleece_encrypt_stdout(key.data(), key.size(), input.data(), input.size(), flags);
+			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), flags);
 		else
-			return mcleece_encrypt(key.data(), key.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_encrypt(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), flags);
 	}
 
 	else if (command == "decrypt")
 	{
+		if (autokey)
+			key_path += ".sk";
+		if (!exists(key_path))
+			return help(options, "key-path is not an accessible path!");
+
 		string input = result["input"].as<string>();
 		if (input.empty())
 			return help(options, "Please specify an input file!");
 		if (!exists(input))
 			return help(options, "Please specify an input file that exists!");
 
-		string key = fmt::format("{}/{}.sk", key_path, id);
 		string pw = get_pw();
 		string output = result["output"].as<string>();
 		int flags = b64? mcleece_flag_base64 : 0;
 
 		if (output.empty())
-			return mcleece_decrypt_stdout(key.data(), key.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
+			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
 		else
-			return mcleece_decrypt(key.data(), key.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_decrypt(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
 	}
 
 	else

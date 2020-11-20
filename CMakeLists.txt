@@ -19,7 +19,7 @@ if(NOT DEFINED CPPFILESYSTEM)
 endif()
 
 set (PROJECTS
-	src/exe/mick
+	src/exe/mcleececli
 
 	src/lib/mcleece
 	src/lib/serialize
