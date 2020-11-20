@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=native -mtune=native -Wall -DKATNUM=10")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=native -mtune=native -Wall -DKATNUM=10 \"-DCRYPTO_NAMESPACE(x)=x\" \"-D_CRYPTO_NAMESPACE(x)=_##x\"")
 
 set(SOURCES
 	randombytes.h
-	aes256ctr.c
 	benes.c
 	bm.c
 	controlbits.c
