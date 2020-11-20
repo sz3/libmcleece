@@ -1,5 +1,6 @@
 CMakeFiles/
 build/
+dist/
 CMakeCache.txt
 Makefile
 CTestTestfile.cmake
