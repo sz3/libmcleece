@@ -18,7 +18,7 @@ cmake .
 make -j4 install
 ```
 
-By default, build products (the library, the headers, and the cli) are installed into the projects `dist/` subdirectory. To install to a system directory, e.g. `/usr`, modify the cmake step:
+By default, build products (the library, the headers, and the cli) are installed into the projects `dist/` subdirectory. To install to a different directory, e.g. `/usr`, modify the cmake step:
 ```
 cmake . -DCMAKE_INSTALL_PREFIX=/usr
 ```
@@ -29,7 +29,7 @@ cmake . -DCMAKE_INSTALL_PREFIX=/usr
 
 * with the cli:
 ```
-mick generate-keypair --key-path=/tmp/key
+mcleececli generate-keypair --key-path=/tmp/key
 ```
 
 * with the C api:
@@ -44,7 +44,7 @@ mcleece_generate_keypair(
 
 * with the cli:
 ```
-mick encrypt /path/to/srcfile --key-path=/tmp/key.pk > encoded.bin
+mcleececli encrypt /path/to/srcfile --key-path=/tmp/key.pk > encoded.bin
 ```
 
 * with the C api:
@@ -61,7 +61,7 @@ mcleece_encrypt(
 
 * with the cli:
 ```
-mick decrypt encoded.bin --key-path=/tmp/key.sk > decoded_file_path
+mcleececli decrypt encoded.bin --key-path=/tmp/key.sk > decoded_file_path
 ```
 
 * with the C api:

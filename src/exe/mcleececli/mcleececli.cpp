@@ -54,7 +54,7 @@ namespace {
 
 int main(int argc, char** argv)
 {
-	cxxopts::Options options("mick", "Encrypt and decrypt using Classic McEliece");
+	cxxopts::Options options("mcleececli", "Encrypt and decrypt using Classic McEliece");
 
 	// password passed on stdin!
 	options.add_options()
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 	if (command == "generate-keypair")
 	{
 		if (!exists(parent_path(key_path)))
-			return help(options, "key-path is not an accessible path!");
+			return help(options, "key-path is not a writable prefix!");
 
 		string pw = get_pw();
 		return mcleece_generate_keypair(key_path.data(), key_path.size(), pw.data(), pw.size());
