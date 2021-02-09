@@ -12,6 +12,8 @@ add_executable (
 target_link_libraries(mcleececli
 
 	mcleece_static
+	-static-libgcc
+	-static-libstdc++
 )
 
 add_custom_command(

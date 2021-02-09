@@ -26,7 +26,7 @@ target_link_libraries(mcleece_static
 	keccak
 
 	crypto
-	sodium
+	sodium.a
 	ssl
 )
 
