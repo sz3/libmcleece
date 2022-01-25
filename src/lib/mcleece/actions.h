@@ -9,6 +9,9 @@
 #include <sstream>
 #include <vector>
 
+// return codes attempt to match https://www.freebsd.org/cgi/man.cgi?query=sysexits
+// ... emphasis on "attempt". I think of it like picking from HTTP status codes...
+
 namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
@@ -25,7 +28,7 @@ namespace actions {
 		mcleece::public_key pubk(keypath);
 
 		if (!is)
-			return 104;
+			return 66;
 
 		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
 		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
@@ -49,7 +52,7 @@ namespace actions {
 
 			std::string ciphertext = mcleece::encrypt(session, data, n);
 			if (ciphertext.empty())
-				return 200;
+				return 70;
 			os << ciphertext;
 
 			++n;
@@ -63,7 +66,7 @@ namespace actions {
 		mcleece::private_key secret(keypath, pw);
 
 		if (!is)
-			return 104;
+			return 66;
 
 		std::string data;
 		size_t last_read;
@@ -74,10 +77,10 @@ namespace actions {
 		last_read = is.gcount();
 
 		if (!is or last_read < data.size())
-			return 110;
+			return 65;
 		auto session_nonce = mcleece::decode_session(secret, data.data(), mcleece::encoded_session_size());
 		if (!session_nonce)
-			return 111;
+			return 64;
 
 		mcleece::session_key& enc_session = session_nonce->first;
 		mcleece::nonce& enc_n = session_nonce->second;
@@ -96,7 +99,7 @@ namespace actions {
 			// decrypt the message
 			std::string message = mcleece::decrypt(enc_session, data, enc_n);
 			if (message.empty())
-				return 200;
+				return 70;
 			os << message;
 
 			++enc_n;
