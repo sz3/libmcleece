@@ -12,8 +12,14 @@ namespace mcleece {
 class public_key
 {
 public:
+	static constexpr unsigned size()
+	{
+		return crypto_kem_PUBLICKEYBYTES;
+	}
+
+public:
 	public_key()
-	    : _data(crypto_kem_PUBLICKEYBYTES)
+	    : _data(size())
 	{}
 
 	public_key(std::string filename)
@@ -30,11 +36,6 @@ public:
 	const unsigned char* data() const
 	{
 		return _data.data();
-	}
-
-	unsigned size() const
-	{
-		return _data.size();
 	}
 
 	bool save(const std::string& filename) const

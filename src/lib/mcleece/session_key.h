@@ -13,10 +13,17 @@ namespace mcleece {
 // maybe a protected subclass with the "more public" methods? (and hiding the data accessors?)
 class session_key
 {
-public:
+protected:
 	static const int SIZE = crypto_kem_CIPHERTEXTBYTES;
+
+public:
 	using KEY_ARRAY = std::array<unsigned char, crypto_kem_BYTES>;
 	using ENCRYPTED_ARRAY = std::array<unsigned char, SIZE>;
+
+	static constexpr unsigned size()
+	{
+		return SIZE;
+	}
 
 public:
 	session_key()

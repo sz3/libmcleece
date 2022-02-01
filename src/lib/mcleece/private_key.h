@@ -15,7 +15,8 @@ namespace mcleece {
 class private_key
 {
 protected:
-	using DATA_ARRAY = std::array<unsigned char, crypto_kem_SECRETKEYBYTES>;
+	static const int SIZE = crypto_kem_SECRETKEYBYTES;
+	using DATA_ARRAY = std::array<unsigned char, SIZE>;
 	using SALT_ARRAY = std::array<unsigned char, crypto_pwhash_scryptsalsa208sha256_SALTBYTES>;
 
 protected:
@@ -27,8 +28,19 @@ protected:
 	}
 
 public:
+	static constexpr unsigned size()
+	{
+		return SIZE;
+	}
+
+public:
 	private_key()
 	{}
+
+	private_key(const char* buff)
+	{
+		std::copy(buff, buff+_data.size(), &_data[0]);
+	}
 
 	private_key(std::string filename, std::string pw)
 	{
@@ -43,11 +55,6 @@ public:
 	const unsigned char* data() const
 	{
 		return _data.data();
-	}
-
-	unsigned size() const
-	{
-		return _data.size();
 	}
 
 	bool save(const std::string& filename, const std::string& pw) const

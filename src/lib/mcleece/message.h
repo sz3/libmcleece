@@ -48,7 +48,7 @@ namespace mcleece
 
 	inline constexpr unsigned encoded_session_size()
 	{
-		return session_key::SIZE + nonce::SIZE;
+		return session_key::size() + nonce::size();
 	}
 
 	inline std::string encode_session(const session_key& session, const nonce& n)
@@ -65,9 +65,9 @@ namespace mcleece
 		if (len < encoded_session_size())
 			return {};
 
-		std::vector<unsigned char> sbuff(data, data + session_key::SIZE);
+		std::vector<unsigned char> sbuff(data, data + session_key::size());
 		auto session = mcleece::decode_session_key(secret, sbuff);
-		nonce n(data + session_key::SIZE);
+		nonce n(data + session_key::size());
 		return {{session, n}};
 	}
 
