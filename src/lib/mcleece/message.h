@@ -16,11 +16,11 @@ namespace mcleece
 {
 	inline std::string encrypt(const session_key& session, const std::string& message, const nonce& n)
 	{
-		if (session.key().size() < crypto_secretbox_KEYBYTES)
+		if (session.key().size() < crypto_secretbox_keybytes())
 			return std::string();
 
 		std::string ciphertext;
-		ciphertext.resize(message.size() + crypto_secretbox_MACBYTES);
+		ciphertext.resize(message.size() + crypto_secretbox_macbytes());
 		int res = crypto_secretbox_easy(
 		    reinterpret_cast<unsigned char*>(&ciphertext[0]), reinterpret_cast<const unsigned char*>(message.data()), message.size(),
 		    n.data(), session.key().data()
@@ -32,11 +32,11 @@ namespace mcleece
 
 	inline std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
 	{
-		if (session.key().size() < crypto_secretbox_KEYBYTES)
+		if (session.key().size() < crypto_secretbox_keybytes())
 			return std::string();
 
 		std::string message;
-		message.resize(ciphertext.size() - crypto_secretbox_MACBYTES);
+		message.resize(ciphertext.size() - crypto_secretbox_macbytes());
 		int res = crypto_secretbox_open_easy(
 		    reinterpret_cast<unsigned char*>(&message[0]), reinterpret_cast<const unsigned char*>(ciphertext.data()), ciphertext.size(),
 		    n.data(), session.key().data()

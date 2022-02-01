@@ -23,7 +23,7 @@ namespace actions {
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os)
+	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		mcleece::public_key pubk(keypath);
 
@@ -43,7 +43,7 @@ namespace actions {
 		std::string data;
 		while (is)
 		{
-			data.resize(MAX_MESSAGE_LENGTH);
+			data.resize(max_length);
 			is.read(data.data(), data.size());
 			size_t last_read = is.gcount();
 
@@ -61,7 +61,7 @@ namespace actions {
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os)
+	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		mcleece::private_key secret(keypath, pw);
 
@@ -86,7 +86,7 @@ namespace actions {
 		mcleece::nonce& enc_n = session_nonce->second;
 
 		// extract the message bytes
-		const int MAX_CIPHERTEXT_LENGTH = MAX_MESSAGE_LENGTH + crypto_secretbox_MACBYTES;
+		const int MAX_CIPHERTEXT_LENGTH = max_length + crypto_secretbox_macbytes();
 		while (is)
 		{
 			data.resize(MAX_CIPHERTEXT_LENGTH);
