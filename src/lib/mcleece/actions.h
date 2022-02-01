@@ -16,7 +16,7 @@ namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
 
-	static int generate_keypair(std::string keypath, std::string pw)
+	static int keypair(std::string keypath, std::string pw)
 	{
 		int res = mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
 		return res;

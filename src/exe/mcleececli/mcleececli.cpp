@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 			return help(options, "key-path is not a writable prefix!");
 
 		string pw = get_pw();
-		return mcleece_generate_keypair(key_path.data(), key_path.size(), pw.data(), pw.size());
+		return mcleece_keypair(key_path.data(), key_path.size(), pw.data(), pw.size());
 	}
 
 	if (command == "encrypt")

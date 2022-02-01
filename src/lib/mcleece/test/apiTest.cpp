@@ -19,7 +19,7 @@ TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
 	string password = "password";
 
 	{
-		int res = mcleece_generate_keypair(keypath.data(), keypath.size(), password.data(), password.size());
+		int res = mcleece_keypair(keypath.data(), keypath.size(), password.data(), password.size());
 		assertEquals( 0, res );
 	}
 
@@ -55,7 +55,7 @@ TEST_CASE( "apiTest/testRoundtrip.b64", "[unit]" )
 	TestHelpers::generate_keypair(keypath);
 
 	{
-		int res = mcleece_generate_keypair(keypath.data(), keypath.size(), password.data(), password.size());
+		int res = mcleece_keypair(keypath.data(), keypath.size(), password.data(), password.size());
 		assertEquals( 0, res );
 	}
 
