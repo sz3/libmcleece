@@ -60,7 +60,7 @@ namespace mcleece
 		return buff;
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const char* data, unsigned len)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(const unsigned char* secret, const char* data, unsigned len)
 	{
 		if (len < encoded_session_size())
 			return {};
@@ -69,6 +69,11 @@ namespace mcleece
 		auto session = mcleece::decode_session_key(secret, sbuff);
 		nonce n(data + session_key::size());
 		return {{session, n}};
+	}
+
+	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const char* data, unsigned len)
+	{
+		return decode_session(secret.data(), data, len);
 	}
 
 	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const std::string& encoded)

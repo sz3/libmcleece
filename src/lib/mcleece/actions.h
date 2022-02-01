@@ -28,12 +28,10 @@ namespace actions {
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	int encrypt(const unsigned char* pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
-
-		mcleece::public_key pubk = mcleece::public_key::from_file(keypath);
 
 		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
 		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
@@ -66,12 +64,17 @@ namespace actions {
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	{
+		mcleece::public_key pubk = mcleece::public_key::from_file(keypath);
+		return encrypt(pubk.data(), is, os, max_length);
+	}
+
+	template <typename INSTREAM, typename OUTSTREAM>
+	int decrypt(const unsigned char* secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
-
-		mcleece::private_key secret = mcleece::private_key::from_file(keypath, pw);
 
 		std::string data;
 		size_t last_read;
@@ -110,5 +113,12 @@ namespace actions {
 			++enc_n;
 		}
 		return 0;
+	}
+
+	template <typename INSTREAM, typename OUTSTREAM>
+	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	{
+		mcleece::private_key secret = mcleece::private_key::from_file(keypath, pw);
+		return decrypt(secret.data(), is, os, max_length);
 	}
 }}
