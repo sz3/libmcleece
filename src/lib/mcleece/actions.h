@@ -16,15 +16,14 @@ namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
 
-	// maybe api is:
-	// private key std::string
-	// public key std::out/fd?
-
-
-	static int keypair(std::string keypath, std::string pw)
+	inline int keypair(unsigned char* pubk, unsigned char* secret)
 	{
-		int res = mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
-		return res;
+		return mcleece::generate_keypair(pubk, secret);
+	}
+
+	inline int keypair_to_file(std::string keypath, std::string pw)
+	{
+		return mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>

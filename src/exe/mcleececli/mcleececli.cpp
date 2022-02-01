@@ -87,13 +87,13 @@ int main(int argc, char** argv)
 
 	string command = result["command"].as<string>();
 
-	if (command == "generate-keypair")
+	if (command == "keypair")
 	{
 		if (!exists(parent_path(key_path)))
 			return help(options, "key-path is not a writable prefix!");
 
 		string pw = get_pw();
-		return mcleece_keypair(key_path.data(), key_path.size(), pw.data(), pw.size());
+		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size());
 	}
 
 	if (command == "encrypt")

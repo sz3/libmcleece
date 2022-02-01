@@ -10,9 +10,14 @@ using std::string;
 
 extern "C" {
 
-int mcleece_keypair(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length)
+int mcleece_keypair(unsigned char* pubk, unsigned char* secret)
 {
-	return mcleece::actions::keypair(string(keypath, keypath_len), string(pw, pw_length));
+	return mcleece::actions::keypair(pubk, secret);
+}
+
+int mcleece_keypair_to_file(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length)
+{
+	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length));
 }
 
 int mcleece_encrypt(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)

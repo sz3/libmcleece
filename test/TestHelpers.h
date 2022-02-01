@@ -20,7 +20,7 @@ namespace TestHelpers
 			return false;
 		}
 		else
-			mcleece::actions::keypair(target_prefix, "password");
+			mcleece::actions::keypair_to_file(target_prefix, "password");
 		return true;
 	}
 }
