@@ -16,6 +16,11 @@ namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
 
+	// maybe api is:
+	// private key std::string
+	// public key std::out/fd?
+
+
 	static int keypair(std::string keypath, std::string pw)
 	{
 		int res = mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
@@ -25,10 +30,10 @@ namespace actions {
 	template <typename INSTREAM, typename OUTSTREAM>
 	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		mcleece::public_key pubk(keypath);
-
 		if (!is)
 			return 66;
+
+		mcleece::public_key pubk = mcleece::public_key::from_file(keypath);
 
 		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
 		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
@@ -63,10 +68,10 @@ namespace actions {
 	template <typename INSTREAM, typename OUTSTREAM>
 	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		mcleece::private_key secret(keypath, pw);
-
 		if (!is)
 			return 66;
+
+		mcleece::private_key secret = mcleece::private_key::from_file(keypath, pw);
 
 		std::string data;
 		size_t last_read;

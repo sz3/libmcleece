@@ -21,7 +21,7 @@ TEST_CASE( "private_keyTest/testSaveLoad", "[unit]" )
 
 	assertTrue( sec.save(tempdir.path() / "foo.sk", "password") );
 
-	mcleece::private_key rek(tempdir.path() / "foo.sk", "password");
+	mcleece::private_key rek = mcleece::private_key::from_file(tempdir.path() / "foo.sk", "password");
 
 	string expected(reinterpret_cast<char*>(sec.data()), sec.size());
 	string actual(reinterpret_cast<char*>(rek.data()), rek.size());

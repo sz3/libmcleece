@@ -9,9 +9,16 @@
 
 namespace mcleece
 {
+	// pubk must be at least public_key::size()
+	// secret must be at least secret_key::size()
+	inline int generate_keypair(unsigned char* pubk, unsigned char* secret)
+	{
+		return crypto_kem_keypair(pubk, secret);
+	}
+
 	inline int generate_keypair(public_key& pubk, private_key& secret)
 	{
-		return crypto_kem_keypair(pubk.data(), secret.data());
+		return generate_keypair(pubk.data(), secret.data());
 	}
 
 	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)

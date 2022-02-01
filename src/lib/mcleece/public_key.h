@@ -22,10 +22,17 @@ public:
 	    : _data(size())
 	{}
 
-	public_key(std::string filename)
-	    : public_key()
+	public_key(const unsigned char* data)
+	    : _data(size())
 	{
-		load(filename);
+		std::copy(data, data+size(), &_data[0]);
+	}
+
+	static public_key from_file(std::string filename)
+	{
+		public_key pk;
+		pk.load(filename);
+		return pk;
 	}
 
 	unsigned char* data()

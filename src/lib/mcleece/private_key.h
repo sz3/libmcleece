@@ -37,14 +37,22 @@ public:
 	private_key()
 	{}
 
-	private_key(const char* buff)
+	private_key(const unsigned char* buff)
 	{
 		std::copy(buff, buff+_data.size(), &_data[0]);
 	}
 
-	private_key(std::string filename, std::string pw)
+	static private_key from_file(std::string filename, std::string pw)
 	{
-		load(filename, pw);
+		private_key sk;
+		if (!sk.load(filename, pw))
+			sk._good = false;
+		return sk;
+	}
+
+	bool good() const
+	{
+		return _good;
 	}
 
 	unsigned char* data()
@@ -102,6 +110,7 @@ public:
 
 protected:
 	DATA_ARRAY _data;
+	bool _good = true;
 };
 
 }
