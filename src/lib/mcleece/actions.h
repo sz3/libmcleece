@@ -49,6 +49,27 @@ namespace actions {
 		return 0;
 	}
 
+	inline int decrypt(const unsigned char* secret, mcleece::byte_view is, mcleece::byte_view& os)
+	{
+		// extract the session from the front of the input
+		if (is.size() < mcleece::encoded_session_size())
+			return 65;
+		auto session_nonce = mcleece::decode_session(secret, mcleece::byte_view(is.data(), mcleece::encoded_session_size()));
+		if (!session_nonce)
+			return 64;
+		if (!is.advance(mcleece::encoded_session_size()))
+			return 65;
+
+		mcleece::session_key& enc_session = session_nonce->first;
+		mcleece::nonce& enc_n = session_nonce->second;
+
+		// extract the message bytes
+		if (!mcleece::decrypt(enc_session, is, enc_n, os))
+			return 70;
+
+		return 0;
+	}
+
 	template <typename INSTREAM, typename OUTSTREAM>
 	int encrypt(const unsigned char* pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{

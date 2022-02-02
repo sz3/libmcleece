@@ -29,8 +29,16 @@ namespace mcleece {
 
 			unsigned char* ours = const_cast<unsigned char*>(this->data());
 			std::copy(other, other+len, ours);
-			*this = {ours + len, this->size() - len};
+			this->advance(len);
 			return len;
+		}
+
+		bool advance(size_t pos)
+		{
+			if (pos > this->size())
+				pos = this->size();
+			*this = {this->data() + pos, this->size() - pos};
+			return this->size() != 0;
 		}
 	};
 }

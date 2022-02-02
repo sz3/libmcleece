@@ -45,18 +45,32 @@ namespace mcleece
 		return ciphertext;
 	}
 
-	inline std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
+	inline std::optional<mcleece::byte_view> decrypt(const session_key& session, const mcleece::byte_view& ciphertext, const nonce& n, mcleece::byte_view message)
 	{
 		if (session.key().size() < crypto_secretbox_keybytes())
-			return std::string();
+			return {};
 
-		std::string message;
-		message.resize(ciphertext.size() - crypto_secretbox_macbytes());
+		size_t mlen = ciphertext.size() - crypto_secretbox_macbytes();
+		if (message.size() < mlen)
+			return {};
+
 		int res = crypto_secretbox_open_easy(
-		    reinterpret_cast<unsigned char*>(&message[0]), reinterpret_cast<const unsigned char*>(ciphertext.data()), ciphertext.size(),
+		    const_cast<unsigned char*>(message.data()), ciphertext.data(), ciphertext.size(),
 		    n.data(), session.key().data()
 		);
 		if (res != 0)
+			return {};
+
+		return {{message.data()+mlen, message.size()-mlen}};
+	}
+
+	inline std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
+	{
+		std::string message;
+		message.resize(ciphertext.size() - crypto_secretbox_macbytes());
+
+		std::optional<mcleece::byte_view> res = decrypt(session, ciphertext, n, message);
+		if (!res)
 			return std::string();
 		return message;
 	}
