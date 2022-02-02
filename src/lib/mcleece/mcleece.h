@@ -13,6 +13,7 @@ int mcleece_keypair(unsigned char* pubk, unsigned char* secret);
 int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length);
 
 int mcleece_encrypt(unsigned char* ciphertext, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk);
+int mcleece_decrypt(unsigned char* decrypted, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_secret);
 
 int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags);
 int mcleece_encrypt_stdout(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, int flags);

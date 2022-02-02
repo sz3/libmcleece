@@ -25,12 +25,16 @@ int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const cha
 
 int mcleece_encrypt(unsigned char* ciphertext, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
 {
-	mcleece::byte_view inmsg(msg, msg_length);
-	mcleece::byte_view output(ciphertext, msg_length + mcleece::encoded_session_size());
-	//boost::iostreams::basic_array_source<unsigned char> istream(msg, msg_length);
-	//boost::iostreams::basic_array_sink<unsigned char> ostream(msg, msg_length + mcleece::encoded_session_size());
-	//return mcleece::actions::encrypt(recipient_pubk, istream, ostream, msg_length);
-	return 0;
+	mcleece::byte_view is(msg, msg_length);
+	mcleece::byte_view os(ciphertext, msg_length + mcleece::encoded_session_size());
+	return mcleece::actions::encrypt(recipient_pubk, is, os);
+}
+
+int mcleece_decrypt(unsigned char* decrypted, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_secret)
+{
+	mcleece::byte_view is(ciphertext, ciphertext_length);
+	mcleece::byte_view os(decrypted, ciphertext_length - mcleece::encoded_session_size());
+	return mcleece::actions::decrypt(recipient_secret, is, os);
 }
 
 int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
