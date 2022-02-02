@@ -27,7 +27,7 @@ namespace actions {
 		return mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
 	}
 
-	inline int encrypt(const unsigned char* pubk, mcleece::byte_view& is, mcleece::byte_view& os)
+	inline int encrypt(const unsigned char* pubk, mcleece::byte_view is, mcleece::byte_view& os)
 	{
 		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
 		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
@@ -108,7 +108,7 @@ namespace actions {
 
 		if (!is or last_read < data.size())
 			return 65;
-		auto session_nonce = mcleece::decode_session(secret, data.data(), mcleece::encoded_session_size());
+		auto session_nonce = mcleece::decode_session(secret, mcleece::byte_view(data.data(), mcleece::encoded_session_size()));
 		if (!session_nonce)
 			return 64;
 

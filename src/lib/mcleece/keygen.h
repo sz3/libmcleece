@@ -4,6 +4,7 @@
 #include "public_key.h"
 #include "private_key.h"
 #include "session_key.h"
+#include "types.h"
 
 #include "mceliece8192128/crypto_kem.h"
 
@@ -46,14 +47,14 @@ namespace mcleece
 		return generate_session_key(pubk.data());
 	}
 
-	inline session_key decode_session_key(const unsigned char* secret, const std::vector<unsigned char>& encrypted_key)
+	inline session_key decode_session_key(const unsigned char* secret, const mcleece::byte_view& encrypted_key)
 	{
 		session_key key(encrypted_key);
 		crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret);
 		return key;
 	}
 
-	inline session_key decode_session_key(const private_key& secret, const std::vector<unsigned char>& encrypted_key)
+	inline session_key decode_session_key(const private_key& secret, const mcleece::byte_view& encrypted_key)
 	{
 		return decode_session_key(secret.data(), encrypted_key);
 	}

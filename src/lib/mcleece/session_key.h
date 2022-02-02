@@ -1,6 +1,8 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include "types.h"
+
 #include "mceliece8192128/crypto_kem.h"
 #include <array>
 #include <string>
@@ -31,12 +33,12 @@ public:
 	{
 	}
 
-	session_key(const std::vector<unsigned char>& encrypted_key)
+	session_key(const mcleece::byte_view& encrypted_key)
 	{
 		_needsDecrypt = init_decode(encrypted_key);
 	}
 
-	bool init_decode(const std::vector<unsigned char>& encrypted_key)
+	bool init_decode(const mcleece::byte_view& encrypted_key)
 	{
 		if (encrypted_key.size() != _encryptedKey.size())
 			return false;

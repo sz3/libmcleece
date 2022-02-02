@@ -84,24 +84,19 @@ namespace mcleece
 		return buff;
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(const unsigned char* secret, const char* data, unsigned len)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(const unsigned char* secret, mcleece::byte_view data)
 	{
-		if (len < encoded_session_size())
+		if (data.size() < encoded_session_size())
 			return {};
 
-		std::vector<unsigned char> sbuff(data, data + session_key::size());
+		mcleece::byte_view sbuff(data.data(), session_key::size());
 		auto session = mcleece::decode_session_key(secret, sbuff);
-		nonce n(data + session_key::size());
+		nonce n(data.data() + session_key::size());
 		return {{session, n}};
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const char* data, unsigned len)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, mcleece::byte_view data)
 	{
-		return decode_session(secret.data(), data, len);
-	}
-
-	inline std::optional<std::pair<session_key, nonce>> decode_session(const private_key& secret, const std::string& encoded)
-	{
-		return decode_session(secret, encoded.data(), encoded.size());
+		return decode_session(secret.data(), data);
 	}
 }

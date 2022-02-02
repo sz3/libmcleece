@@ -25,7 +25,7 @@ public:
 		randomize();
 	}
 
-	nonce(const char* data)
+	nonce(const unsigned char* data)
 	{
 		std::copy(data, data+size(), _data.data());
 	}
