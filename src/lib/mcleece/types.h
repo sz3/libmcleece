@@ -22,14 +22,14 @@ namespace mcleece {
 		{}
 
 		template <typename CHAR>
-		int copy_from(const CHAR* other, size_t len)
+		int overwrite_from(const CHAR* other, size_t len)
 		{
 			if (len > this->size())
 				len = this->size();
 
 			unsigned char* ours = const_cast<unsigned char*>(this->data());
 			std::copy(other, other+len, ours);
-			this = {ours + len, this->size() - len};
+			*this = {ours + len, this->size() - len};
 			return len;
 		}
 	};

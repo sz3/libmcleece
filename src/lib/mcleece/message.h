@@ -57,8 +57,8 @@ namespace mcleece
 		if (buff.size() < session.encrypted_key().size() + n.size())
 			return false;
 
-		std::copy(session.encrypted_key().begin(), session.encrypted_key().end(), const_cast<unsigned char*>(buff.data()));
-		std::copy(n.data(), n.data()+n.size(), const_cast<unsigned char*>(buff.data()+session.encrypted_key().size()));
+		buff.overwrite_from(session.encrypted_key().data(), session.encrypted_key().size());
+		buff.overwrite_from(n.data(), n.size());
 		return true;
 	}
 
