@@ -32,14 +32,14 @@ TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
 	string encryptedPath = tempdir.path() / "encrypted_msg";
 	{
 		string pkpath = keypath + ".pk";
-		int res = mcleece_encrypt(pkpath.data(), pkpath.size(), srcPath.data(), srcPath.size(), encryptedPath.data(), encryptedPath.size(), 0);
+		int res = mcleece_encrypt_file(pkpath.data(), pkpath.size(), srcPath.data(), srcPath.size(), encryptedPath.data(), encryptedPath.size(), 0);
 		assertEquals( 0, res );
 	}
 
 	string dstPath = tempdir.path() / "decrypted";
 	{
 		string skpath = keypath + ".sk";
-		int res = mcleece_decrypt(skpath.data(), skpath.size(), password.data(), password.size(), encryptedPath.data(), encryptedPath.size(), dstPath.data(), dstPath.size(), 0);
+		int res = mcleece_decrypt_file(skpath.data(), skpath.size(), password.data(), password.size(), encryptedPath.data(), encryptedPath.size(), dstPath.data(), dstPath.size(), 0);
 		assertEquals(0, res);
 	}
 
@@ -68,14 +68,14 @@ TEST_CASE( "apiTest/testRoundtrip.b64", "[unit]" )
 	string encryptedPath = tempdir.path() / "encrypted_msg";
 	{
 		string pkpath = keypath + ".pk";
-		int res = mcleece_encrypt(pkpath.data(), pkpath.size(), srcPath.data(), srcPath.size(), encryptedPath.data(), encryptedPath.size(), mcleece_flag_base64);
+		int res = mcleece_encrypt_file(pkpath.data(), pkpath.size(), srcPath.data(), srcPath.size(), encryptedPath.data(), encryptedPath.size(), mcleece_flag_base64);
 		assertEquals( 0, res );
 	}
 
 	string dstPath = tempdir.path() / "decrypted";
 	{
 		string skpath = keypath + ".sk";
-		int res = mcleece_decrypt(skpath.data(), skpath.size(), password.data(), password.size(), encryptedPath.data(), encryptedPath.size(), dstPath.data(), dstPath.size(), mcleece_flag_base64);
+		int res = mcleece_decrypt_file(skpath.data(), skpath.size(), password.data(), password.size(), encryptedPath.data(), encryptedPath.size(), dstPath.data(), dstPath.size(), mcleece_flag_base64);
 		assertEquals(0, res);
 	}
 

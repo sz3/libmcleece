@@ -2,11 +2,14 @@
 #include "mcleece.h"
 
 #include "actions.h"
+#include "message.h"
+#include "types.h"
 #include "serialize/b64_instream.h"
 #include "serialize/b64_outstream.h"
 #include <fstream>
 
 using std::string;
+using std::string_view;
 
 extern "C" {
 
@@ -15,12 +18,22 @@ int mcleece_keypair(unsigned char* pubk, unsigned char* secret)
 	return mcleece::actions::keypair(pubk, secret);
 }
 
-int mcleece_keypair_to_file(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length)
+int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length)
 {
 	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length));
 }
 
-int mcleece_encrypt(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
+int mcleece_encrypt(unsigned char* ciphertext, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
+{
+	mcleece::byte_view inmsg(msg, msg_length);
+	mcleece::byte_view output(ciphertext, msg_length + mcleece::encoded_session_size());
+	//boost::iostreams::basic_array_source<unsigned char> istream(msg, msg_length);
+	//boost::iostreams::basic_array_sink<unsigned char> ostream(msg, msg_length + mcleece::encoded_session_size());
+	//return mcleece::actions::encrypt(recipient_pubk, istream, ostream, msg_length);
+	return 0;
+}
+
+int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
 {
 	std::ifstream istream(string(srcpath, srcpath_len), std::ios::binary);
 	std::ofstream f(string(dstpath, dstpath_len), std::ios::binary);
@@ -47,7 +60,7 @@ int mcleece_encrypt_stdout(char* keypath, unsigned keypath_len, char* srcpath, u
 		return mcleece::actions::encrypt(string(keypath, keypath_len), istream, std::cout);
 }
 
-int mcleece_decrypt(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
+int mcleece_decrypt_file(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
 {
 	std::ifstream istream(string(srcpath, srcpath_len), std::ios::binary);
 	std::ofstream f(string(dstpath, dstpath_len), std::ios::binary);

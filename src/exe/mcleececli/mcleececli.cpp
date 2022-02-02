@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 		if (output.empty())
 			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), flags);
 		else
-			return mcleece_encrypt(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_encrypt_file(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), flags);
 	}
 
 	else if (command == "decrypt")
@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 		if (output.empty())
 			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
 		else
-			return mcleece_decrypt(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_decrypt_file(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
 	}
 
 	else
