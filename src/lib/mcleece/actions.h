@@ -3,6 +3,7 @@
 
 #include "keygen.h"
 #include "message.h"
+#include "types.h"
 
 #include "serialize/format.h"
 #include <string>
@@ -24,6 +25,28 @@ namespace actions {
 	inline int keypair_to_file(std::string keypath, std::string pw)
 	{
 		return mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
+	}
+
+	inline int encrypt(const unsigned char* pubk, mcleece::byte_view& is, mcleece::byte_view& os)
+	{
+		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
+		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
+		mcleece::session_key session = mcleece::generate_session_key(pubk);
+		mcleece::nonce n;
+
+		// store session data first
+		std::optional<mcleece::byte_view> res = mcleece::encode_session(session, n, os);
+		if (!res)
+			return 66;
+		os = *res;
+
+		res = mcleece::encrypt(session, is, n, os);
+		// it's all in RAM -- single chunk encode
+		if (!res)
+			return 70;
+		os = *res;
+
+		return 0;
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
