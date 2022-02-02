@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
 	// password passed on stdin!
 	options.add_options()
-	    ("command", "encrypt|decrypt|generate-keypair", cxxopts::value<string>())
+	    ("command", "encrypt|decrypt|keypair", cxxopts::value<string>())
 	    ("k,key-path", "Path to key or keypair (default: {cwd}/identity)", cxxopts::value<string>())
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
