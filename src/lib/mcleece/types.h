@@ -22,7 +22,7 @@ namespace mcleece {
 		{}
 
 		template <typename CHAR>
-		int overwrite_from(const CHAR* other, size_t len)
+		int write(const CHAR* other, size_t len)
 		{
 			if (len > this->size())
 				len = this->size();

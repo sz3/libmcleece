@@ -57,8 +57,8 @@ namespace mcleece
 		if (buff.size() < session.encrypted_key().size() + n.size())
 			return false;
 
-		buff.overwrite_from(session.encrypted_key().data(), session.encrypted_key().size());
-		buff.overwrite_from(n.data(), n.size());
+		buff.write(session.encrypted_key().data(), session.encrypted_key().size());
+		buff.write(n.data(), n.size());
 		return true;
 	}
 
