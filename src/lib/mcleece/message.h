@@ -15,7 +15,7 @@
 
 namespace mcleece
 {
-	inline mcleece::byte_view encrypt(const session_key& session, const mcleece::byte_view& message, const nonce& n, mcleece::byte_view ciphertext)
+	inline std::optional<mcleece::byte_view> encrypt(const session_key& session, const mcleece::byte_view& message, const nonce& n, mcleece::byte_view ciphertext)
 	{
 		if (session.key().size() < crypto_secretbox_keybytes())
 			return {};
@@ -31,7 +31,7 @@ namespace mcleece
 		if (res != 0)
 			return {};
 
-		return {ciphertext.data()+clen, ciphertext.size()-clen};
+		return {{ciphertext.data()+clen, ciphertext.size()-clen}};
 	}
 
 	inline std::string encrypt(const session_key& session, const std::string& message, const nonce& n)

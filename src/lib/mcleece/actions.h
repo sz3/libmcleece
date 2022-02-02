@@ -108,7 +108,7 @@ namespace actions {
 
 		if (!is or last_read < data.size())
 			return 65;
-		auto session_nonce = mcleece::decode_session(secret, mcleece::byte_view(data.data(), mcleece::encoded_session_size()));
+		auto session_nonce = mcleece::decode_session(secret, data);
 		if (!session_nonce)
 			return 64;
 
