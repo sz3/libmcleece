@@ -15,23 +15,23 @@
 
 namespace mcleece
 {
-	inline std::optional<mcleece::byte_view> encrypt(const session_key& session, const mcleece::byte_view& message, const nonce& n, mcleece::byte_view ciphertext)
+	inline unsigned encrypt(const session_key& session, const mcleece::byte_view& message, const nonce& n, mcleece::byte_view ciphertext)
 	{
 		if (session.key().size() < crypto_secretbox_keybytes())
-			return {};
+			return 0;
 
 		size_t clen = message.size() + crypto_secretbox_macbytes();
 		if (ciphertext.size() < clen)
-			return {};
+			return 0;
 
 		int res = crypto_secretbox_easy(
 		    const_cast<unsigned char*>(ciphertext.data()), message.data(), message.size(),
 		    n.data(), session.key().data()
 		);
 		if (res != 0)
-			return {};
+			return 0;
 
-		return {{ciphertext.data()+clen, ciphertext.size()-clen}};
+		return clen;
 	}
 
 	inline std::string encrypt(const session_key& session, const std::string& message, const nonce& n)
@@ -39,29 +39,29 @@ namespace mcleece
 		std::string ciphertext;
 		ciphertext.resize(message.size() + crypto_secretbox_macbytes());
 
-		std::optional<mcleece::byte_view> res = encrypt(session, message, n, ciphertext);
+		unsigned res = encrypt(session, message, n, ciphertext);
 		if (!res)
 			return std::string();
 		return ciphertext;
 	}
 
-	inline std::optional<mcleece::byte_view> decrypt(const session_key& session, const mcleece::byte_view& ciphertext, const nonce& n, mcleece::byte_view message)
+	inline unsigned decrypt(const session_key& session, const mcleece::byte_view& ciphertext, const nonce& n, mcleece::byte_view message)
 	{
 		if (session.key().size() < crypto_secretbox_keybytes())
-			return {};
+			return 0;
 
 		size_t mlen = ciphertext.size() - crypto_secretbox_macbytes();
 		if (message.size() < mlen)
-			return {};
+			return 0;
 
-		int res = crypto_secretbox_open_easy(
+		unsigned res = crypto_secretbox_open_easy(
 		    const_cast<unsigned char*>(message.data()), ciphertext.data(), ciphertext.size(),
 		    n.data(), session.key().data()
 		);
 		if (res != 0)
-			return {};
+			return 0;
 
-		return {{message.data()+mlen, message.size()-mlen}};
+		return mlen;
 	}
 
 	inline std::string decrypt(const session_key& session, const std::string& ciphertext, const nonce& n)
@@ -69,7 +69,7 @@ namespace mcleece
 		std::string message;
 		message.resize(ciphertext.size() - crypto_secretbox_macbytes());
 
-		std::optional<mcleece::byte_view> res = decrypt(session, ciphertext, n, message);
+		unsigned res = decrypt(session, ciphertext, n, message);
 		if (!res)
 			return std::string();
 		return message;
@@ -80,14 +80,14 @@ namespace mcleece
 		return session_key::size() + nonce::size();
 	}
 
-	inline std::optional<mcleece::byte_view> encode_session(const session_key& session, const nonce& n, mcleece::byte_view buff)
+	inline unsigned encode_session(const session_key& session, const nonce& n, mcleece::byte_view buff)
 	{
 		if (buff.size() < session.encrypted_key().size() + n.size())
-			return {};
+			return 0;
 
-		buff.write(session.encrypted_key().data(), session.encrypted_key().size());
-		buff.write(n.data(), n.size());
-		return buff;
+		int count = buff.write(session.encrypted_key().data(), session.encrypted_key().size());
+		count += buff.write(n.data(), n.size());
+		return count;
 	}
 
 	inline std::string encode_session(const session_key& session, const nonce& n)
