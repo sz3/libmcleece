@@ -4,6 +4,7 @@
 #include "keygen.h"
 #include "nonce.h"
 #include "session_key.h"
+#include "types.h"
 
 #include "sodium/crypto_secretbox.h"
 #include <iostream>
@@ -51,12 +52,21 @@ namespace mcleece
 		return session_key::size() + nonce::size();
 	}
 
+	inline bool encode_session(const session_key& session, const nonce& n, mcleece::byte_view buff)
+	{
+		if (buff.size() < session.encrypted_key().size() + n.size())
+			return false;
+
+		std::copy(session.encrypted_key().begin(), session.encrypted_key().end(), const_cast<unsigned char*>(buff.data()));
+		std::copy(n.data(), n.data()+n.size(), const_cast<unsigned char*>(buff.data()+session.encrypted_key().size()));
+		return true;
+	}
+
 	inline std::string encode_session(const session_key& session, const nonce& n)
 	{
 		std::string buff;
 		buff.resize(session.encrypted_key().size() + n.size());
-		std::copy(session.encrypted_key().begin(), session.encrypted_key().end(), &buff[0]);
-		std::copy(n.data(), n.data()+n.size(), &buff[session.encrypted_key().size()]);
+		encode_session(session, n, buff);
 		return buff;
 	}
 
