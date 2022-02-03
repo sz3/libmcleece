@@ -35,15 +35,15 @@ namespace actions {
 		mcleece::nonce n;
 
 		// store session data first
-		unsigned count = mcleece::encode_session(session, n, os);
-		if (!count or !os.advance(count))
+		if (!mcleece::encode_session(session, n, os))
 			return 66;
+		if (!os.size())
+			return 67;
 
 		// it's all in RAM -- single chunk encode
-		count = mcleece::encrypt(session, is, n, os);
-		if (!count)
-			return 70;
-		os.advance(count);
+		int res = mcleece::encrypt(session, is, n, os);
+		if (res != 0)
+			return 69 + res;
 
 		return 0;
 	}
@@ -53,7 +53,7 @@ namespace actions {
 		// extract the session from the front of the input
 		if (is.size() < mcleece::session_header_size())
 			return 65;
-		auto session_nonce = mcleece::decode_session(secret, mcleece::byte_view(is.data(), mcleece::session_header_size()));
+		auto session_nonce = mcleece::decode_session(secret, is);
 		if (!session_nonce)
 			return 64;
 		if (!is.advance(mcleece::session_header_size()))
@@ -63,10 +63,9 @@ namespace actions {
 		mcleece::nonce& enc_n = session_nonce->second;
 
 		// extract the message bytes
-		int count = mcleece::decrypt(enc_session, is, enc_n, os);
-		if (!count)
-			return 70;
-		os.advance(count);
+		int res = mcleece::decrypt(enc_session, is, enc_n, os);
+		if (res != 0)
+			return 69 + res;
 
 		return 0;
 	}
