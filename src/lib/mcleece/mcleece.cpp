@@ -9,13 +9,12 @@
 #include <fstream>
 
 using std::string;
-using std::string_view;
 
 extern "C" {
 
 const unsigned mcleece_PUBLIC_KEY_SIZE = mcleece::public_key::size();
 const unsigned mcleece_SECRET_KEY_SIZE = mcleece::private_key::size();
-const unsigned mcleece_MESSAGE_HEADER_SIZE = mcleece::session_header_size() + crypto_secretbox_macbytes();
+const unsigned mcleece_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE;
 
 int mcleece_keypair(unsigned char* pubk, unsigned char* secret)
 {

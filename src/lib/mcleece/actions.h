@@ -3,9 +3,9 @@
 
 #include "keygen.h"
 #include "message.h"
-#include "types.h"
 
 #include "serialize/format.h"
+#include "util/byte_view.h"
 #include <string>
 #include <sstream>
 #include <vector>
@@ -16,6 +16,7 @@
 namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
+	static const unsigned MESSAGE_HEADER_SIZE = mcleece::session_header_size() + crypto_secretbox_macbytes();
 
 	inline int keypair(unsigned char* pubk, unsigned char* secret)
 	{
