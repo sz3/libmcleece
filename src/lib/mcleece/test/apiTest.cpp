@@ -11,10 +11,10 @@ using std::string;
 TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
 {
 	std::vector<unsigned char> pubk;
-	pubk.resize(mcleece_public_key_size());
+	pubk.resize(mcleece_PUBLIC_KEY_SIZE);
 
 	std::vector<unsigned char> secret;
-	secret.resize(mcleece_secret_key_size());
+	secret.resize(mcleece_SECRET_KEY_SIZE);
 
 	{
 		int res = mcleece_keypair(pubk.data(), secret.data());
@@ -23,7 +23,7 @@ TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
 
 	string srcMessage = "hello friends";
 	std::vector<unsigned char> cipherText;
-	cipherText.resize(srcMessage.size() + mcleece_message_header_size());
+	cipherText.resize(srcMessage.size() + mcleece_MESSAGE_HEADER_SIZE);
 	{
 		int res = mcleece_encrypt(cipherText.data(), reinterpret_cast<unsigned char*>(srcMessage.data()), srcMessage.size(), pubk.data());
 		assertEquals( 0, res );

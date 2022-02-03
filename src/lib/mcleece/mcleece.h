@@ -9,9 +9,9 @@ extern "C" {
 static const int mcleece_flag_rawbinary = 0;
 static const int mcleece_flag_base64 = 1;
 
-unsigned mcleece_public_key_size(void);
-unsigned mcleece_secret_key_size(void);
-unsigned mcleece_message_header_size(void);
+extern const unsigned mcleece_PUBLIC_KEY_SIZE;
+extern const unsigned mcleece_SECRET_KEY_SIZE;
+extern const unsigned mcleece_MESSAGE_HEADER_SIZE;
 
 int mcleece_keypair(unsigned char* pubk, unsigned char* secret);
 int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length);
