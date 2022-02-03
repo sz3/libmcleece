@@ -40,14 +40,14 @@ int mcleece_encrypt(unsigned char* ciphertext_out, const unsigned char* msg, uns
 {
 	mcleece::byte_view is(msg, msg_length);
 	mcleece::byte_view os(ciphertext_out, msg_length + mcleece_MESSAGE_HEADER_SIZE);
-	return mcleece::actions::encrypt(recipient_pubk, is, os);
+	return mcleece::actions::encrypt(os, is, recipient_pubk);
 }
 
 int mcleece_decrypt(unsigned char* decrypted_out, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_secret)
 {
 	mcleece::byte_view is(ciphertext, ciphertext_length);
 	mcleece::byte_view os(decrypted_out, ciphertext_length - mcleece_MESSAGE_HEADER_SIZE);
-	return mcleece::actions::decrypt(recipient_secret, is, os);
+	return mcleece::actions::decrypt(os, is, recipient_secret);
 }
 
 int mcleece_crypto_box_seal(unsigned char* ciphertext_out, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)

@@ -28,7 +28,7 @@ namespace actions {
 		return mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
 	}
 
-	inline int encrypt(const unsigned char* pubk, mcleece::byte_view is, mcleece::byte_view& os)
+	inline int encrypt(mcleece::byte_view& output_c, mcleece::byte_view message, const unsigned char* pubk)
 	{
 		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
 		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
@@ -36,35 +36,35 @@ namespace actions {
 		mcleece::nonce n;
 
 		// store session data first
-		if (!mcleece::encode_session(session, n, os))
+		if (!mcleece::encode_session(output_c, session, n))
 			return 66;
-		if (!os.size())
+		if (!output_c.size())
 			return 67;
 
 		// it's all in RAM -- single chunk encode
-		int res = mcleece::encrypt(session, is, n, os);
+		int res = mcleece::encrypt(output_c, message, session, n);
 		if (res != 0)
 			return 69 + res;
 
 		return 0;
 	}
 
-	inline int decrypt(const unsigned char* secret, mcleece::byte_view is, mcleece::byte_view& os)
+	inline int decrypt(mcleece::byte_view& output_m, mcleece::byte_view ciphertext, const unsigned char* secret)
 	{
 		// extract the session from the front of the input
-		if (is.size() < mcleece::session_header_size())
+		if (ciphertext.size() < mcleece::session_header_size())
 			return 65;
-		auto session_nonce = mcleece::decode_session(secret, is);
+		auto session_nonce = mcleece::decode_session(ciphertext, secret);
 		if (!session_nonce)
 			return 64;
-		if (!is.advance(mcleece::session_header_size()))
+		if (!ciphertext.advance(mcleece::session_header_size()))
 			return 65;
 
 		mcleece::session_key& enc_session = session_nonce->first;
 		mcleece::nonce& enc_n = session_nonce->second;
 
 		// extract the message bytes
-		int res = mcleece::decrypt(enc_session, is, enc_n, os);
+		int res = mcleece::decrypt(output_m, ciphertext, enc_session, enc_n);
 		if (res != 0)
 			return 69 + res;
 
@@ -97,7 +97,7 @@ namespace actions {
 			if (last_read < data.size())
 				data.resize(last_read);
 
-			std::string ciphertext = mcleece::encrypt(session, data, n);
+			std::string ciphertext = mcleece::encrypt(data, session, n);
 			if (ciphertext.empty())
 				return 70;
 			os << ciphertext;
@@ -130,7 +130,7 @@ namespace actions {
 
 		if (!is or last_read < data.size())
 			return 65;
-		auto session_nonce = mcleece::decode_session(secret, data);
+		auto session_nonce = mcleece::decode_session(data, secret);
 		if (!session_nonce)
 			return 64;
 
@@ -149,7 +149,7 @@ namespace actions {
 				data.resize(last_read);
 
 			// decrypt the message
-			std::string message = mcleece::decrypt(enc_session, data, enc_n);
+			std::string message = mcleece::decrypt(data, enc_session, enc_n);
 			if (message.empty())
 				return 70;
 			os << message;

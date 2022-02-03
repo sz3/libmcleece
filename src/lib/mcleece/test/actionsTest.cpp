@@ -35,7 +35,7 @@ TEST_CASE( "actionsTest/testDecrypt", "[unit]" )
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
 	mcleece::nonce n;
-	std::string ciphertext = mcleece::encrypt(session, "hello world", n);
+	std::string ciphertext = mcleece::encrypt("hello world", session, n);
 	std::string sessiontext = mcleece::encode_session(session, n);
 
 	{
@@ -65,14 +65,14 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 	assertEquals( 0, mcleece::actions::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "helloworld"), ss) );
 
 	std::string enc_message = ss.str();
-	auto session_nonce = mcleece::decode_session(secret, enc_message);
+	auto session_nonce = mcleece::decode_session(enc_message, secret);
 	assertTrue( session_nonce );
 
 	mcleece::session_key& enc_session = session_nonce->first;
 	mcleece::nonce& enc_n = session_nonce->second;
 
 	std::string ciphertext = enc_message.substr(mcleece::session_header_size());
-	std::string message = mcleece::decrypt(enc_session, ciphertext, enc_n);
+	std::string message = mcleece::decrypt(ciphertext, enc_session, enc_n);
 	assertEquals( "hello friends", message );
 }
 

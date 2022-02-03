@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+// should this be a template class?
+// one that manages a vec, and one that uses a byte_view?
+
 namespace mcleece {
 
 class public_key
