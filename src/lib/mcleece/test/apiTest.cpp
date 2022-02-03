@@ -2,82 +2,40 @@
 #include "unittest.h"
 
 #include "mcleece/mcleece.h"
-#include "util/File.h"
-#include "util/MakeTempDirectory.h"
 
-#include <iostream>
-#include <fstream>
 #include <string>
+#include <vector>
 
 using std::string;
 
 TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
 {
-	MakeTempDirectory tempdir;
+	std::vector<unsigned char> pubk;
+	pubk.resize(mcleece_public_key_size());
 
-	string keypath = tempdir.path() / "apitest";
-	string password = "password";
+	std::vector<unsigned char> secret;
+	secret.resize(mcleece_secret_key_size());
 
 	{
-		int res = mcleece_keypair_to_file(keypath.data(), keypath.size(), password.data(), password.size());
+		int res = mcleece_keypair(pubk.data(), secret.data());
 		assertEquals( 0, res );
 	}
 
-	string srcPath = tempdir.path() / "helloworld";
+	string srcMessage = "hello friends";
+	std::vector<unsigned char> cipherText;
+	cipherText.resize(srcMessage.size() + mcleece_session_header_size());
 	{
-		std::ofstream f(srcPath);
-		f << "hello friends";
-	}
-
-	string encryptedPath = tempdir.path() / "encrypted_msg";
-	{
-		string pkpath = keypath + ".pk";
-		int res = mcleece_encrypt_file(pkpath.data(), pkpath.size(), srcPath.data(), srcPath.size(), encryptedPath.data(), encryptedPath.size(), 0);
+		int res = mcleece_encrypt(cipherText.data(), reinterpret_cast<unsigned char*>(srcMessage.data()), srcMessage.size(), pubk.data());
 		assertEquals( 0, res );
 	}
 
-	string dstPath = tempdir.path() / "decrypted";
+	string dstMessage;
+	dstMessage.resize(srcMessage.size());
 	{
-		string skpath = keypath + ".sk";
-		int res = mcleece_decrypt_file(skpath.data(), skpath.size(), password.data(), password.size(), encryptedPath.data(), encryptedPath.size(), dstPath.data(), dstPath.size(), 0);
+		int res = mcleece_decrypt(reinterpret_cast<unsigned char*>(dstMessage.data()), cipherText.data(), cipherText.size(), secret.data());
 		assertEquals(0, res);
 	}
 
-	assertEquals( "hello friends", File(dstPath).read_all() );
+	assertEquals( "hello friends", dstMessage );
 }
 
-TEST_CASE( "apiTest/testRoundtrip.b64", "[unit]" )
-{
-	MakeTempDirectory tempdir;
-
-	string keypath = tempdir.path() / "test";
-	string password = "password";
-	TestHelpers::generate_keypair(keypath);
-
-	{
-		int res = mcleece_keypair_to_file(keypath.data(), keypath.size(), password.data(), password.size());
-		assertEquals( 0, res );
-	}
-
-	string srcPath = tempdir.path() / "helloworld";
-	{
-		std::ofstream f(srcPath);
-		f << "hello friends";
-	}
-
-	string encryptedPath = tempdir.path() / "encrypted_msg";
-	{
-		string pkpath = keypath + ".pk";
-		int res = mcleece_encrypt_file(pkpath.data(), pkpath.size(), srcPath.data(), srcPath.size(), encryptedPath.data(), encryptedPath.size(), mcleece_flag_base64);
-		assertEquals( 0, res );
-	}
-
-	string dstPath = tempdir.path() / "decrypted";
-	{
-		string skpath = keypath + ".sk";
-		int res = mcleece_decrypt_file(skpath.data(), skpath.size(), password.data(), password.size(), encryptedPath.data(), encryptedPath.size(), dstPath.data(), dstPath.size(), mcleece_flag_base64);
-		assertEquals(0, res);
-	}
-
-	assertEquals( "hello friends", File(dstPath).read_all() );
-}

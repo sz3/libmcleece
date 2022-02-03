@@ -51,12 +51,12 @@ namespace actions {
 	inline int decrypt(const unsigned char* secret, mcleece::byte_view is, mcleece::byte_view& os)
 	{
 		// extract the session from the front of the input
-		if (is.size() < mcleece::encoded_session_size())
+		if (is.size() < mcleece::session_header_size())
 			return 65;
-		auto session_nonce = mcleece::decode_session(secret, mcleece::byte_view(is.data(), mcleece::encoded_session_size()));
+		auto session_nonce = mcleece::decode_session(secret, mcleece::byte_view(is.data(), mcleece::session_header_size()));
 		if (!session_nonce)
 			return 64;
-		if (!is.advance(mcleece::encoded_session_size()))
+		if (!is.advance(mcleece::session_header_size()))
 			return 65;
 
 		mcleece::session_key& enc_session = session_nonce->first;
@@ -124,7 +124,7 @@ namespace actions {
 		size_t last_read;
 
 		// extract the session from the front of the input
-		data.resize(mcleece::encoded_session_size());
+		data.resize(mcleece::session_header_size());
 		is.read(data.data(), data.size());
 		last_read = is.gcount();
 

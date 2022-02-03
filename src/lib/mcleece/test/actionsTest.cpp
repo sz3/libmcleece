@@ -70,7 +70,7 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 	mcleece::session_key& enc_session = session_nonce->first;
 	mcleece::nonce& enc_n = session_nonce->second;
 
-	std::string ciphertext = enc_message.substr(mcleece::encoded_session_size());
+	std::string ciphertext = enc_message.substr(mcleece::session_header_size());
 	std::string message = mcleece::decrypt(enc_session, ciphertext, enc_n);
 	assertEquals( "hello friends", message );
 }

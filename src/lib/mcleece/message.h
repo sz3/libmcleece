@@ -75,7 +75,7 @@ namespace mcleece
 		return message;
 	}
 
-	inline constexpr unsigned encoded_session_size()
+	inline constexpr unsigned session_header_size()
 	{
 		return session_key::size() + nonce::size();
 	}
@@ -100,7 +100,7 @@ namespace mcleece
 
 	inline std::optional<std::pair<session_key, nonce>> decode_session(const unsigned char* secret, mcleece::byte_view data)
 	{
-		if (data.size() < encoded_session_size())
+		if (data.size() < session_header_size())
 			return {};
 
 		mcleece::byte_view sbuff(data.data(), session_key::size());
