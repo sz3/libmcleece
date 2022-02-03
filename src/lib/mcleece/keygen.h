@@ -47,15 +47,15 @@ namespace mcleece
 		return generate_session_key(pubk.data());
 	}
 
-	inline session_key decode_session_key(const unsigned char* secret, const mcleece::byte_view& encrypted_key)
+	inline session_key decode_session_key(const mcleece::byte_view& encrypted_key, const unsigned char* secret)
 	{
 		session_key key(encrypted_key);
 		crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret);
 		return key;
 	}
 
-	inline session_key decode_session_key(const private_key& secret, const mcleece::byte_view& encrypted_key)
+	inline session_key decode_session_key(const mcleece::byte_view& encrypted_key, const private_key& secret)
 	{
-		return decode_session_key(secret.data(), encrypted_key);
+		return decode_session_key(encrypted_key, secret.data());
 	}
 }
