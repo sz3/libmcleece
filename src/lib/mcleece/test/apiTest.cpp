@@ -23,7 +23,7 @@ TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
 
 	string srcMessage = "hello friends";
 	std::vector<unsigned char> cipherText;
-	cipherText.resize(srcMessage.size() + mcleece_session_header_size());
+	cipherText.resize(srcMessage.size() + mcleece_message_header_size());
 	{
 		int res = mcleece_encrypt(cipherText.data(), reinterpret_cast<unsigned char*>(srcMessage.data()), srcMessage.size(), pubk.data());
 		assertEquals( 0, res );

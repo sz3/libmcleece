@@ -23,9 +23,9 @@ unsigned mcleece_secret_key_size(void)
 	return mcleece::private_key::size();
 }
 
-unsigned mcleece_session_header_size(void)
+unsigned mcleece_message_header_size(void)
 {
-	return mcleece::session_header_size();
+	return mcleece::session_header_size() + crypto_secretbox_macbytes();
 }
 
 int mcleece_keypair(unsigned char* pubk, unsigned char* secret)
@@ -41,14 +41,14 @@ int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const cha
 int mcleece_encrypt(unsigned char* ciphertext, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
 {
 	mcleece::byte_view is(msg, msg_length);
-	mcleece::byte_view os(ciphertext, msg_length + mcleece_session_header_size());
+	mcleece::byte_view os(ciphertext, msg_length + mcleece_message_header_size());
 	return mcleece::actions::encrypt(recipient_pubk, is, os);
 }
 
 int mcleece_decrypt(unsigned char* decrypted, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_secret)
 {
 	mcleece::byte_view is(ciphertext, ciphertext_length);
-	mcleece::byte_view os(decrypted, ciphertext_length - mcleece_session_header_size());
+	mcleece::byte_view os(decrypted, ciphertext_length - mcleece_message_header_size());
 	return mcleece::actions::decrypt(recipient_secret, is, os);
 }
 
