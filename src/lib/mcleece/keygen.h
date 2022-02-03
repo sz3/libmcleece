@@ -4,7 +4,7 @@
 #include "public_key.h"
 #include "private_key.h"
 #include "session_key.h"
-#include "types.h"
+#include "util/byte_view.h"
 
 #include "mceliece8192128/crypto_kem.h"
 

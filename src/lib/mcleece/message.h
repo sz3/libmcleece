@@ -4,7 +4,7 @@
 #include "keygen.h"
 #include "nonce.h"
 #include "session_key.h"
-#include "types.h"
+#include "util/byte_view.h"
 
 #include "sodium/crypto_secretbox.h"
 #include <iostream>

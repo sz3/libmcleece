@@ -13,7 +13,6 @@ set(SOURCES
 	private_key.h
 	public_key.h
 	session_key.h
-	types.h
 )
 
 add_library(mcleece_static STATIC ${SOURCES})

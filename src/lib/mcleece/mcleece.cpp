@@ -3,9 +3,9 @@
 
 #include "actions.h"
 #include "message.h"
-#include "types.h"
 #include "serialize/b64_instream.h"
 #include "serialize/b64_outstream.h"
+#include "util/byte_view.h"
 #include <fstream>
 
 using std::string;
