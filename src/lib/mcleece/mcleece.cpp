@@ -2,6 +2,7 @@
 #include "mcleece.h"
 
 #include "actions.h"
+#include "easy.h"
 #include "message.h"
 #include "serialize/b64_instream.h"
 #include "serialize/b64_outstream.h"
@@ -16,6 +17,10 @@ const unsigned mcleece_PUBLIC_KEY_SIZE = mcleece::public_key::size();
 const unsigned mcleece_SECRET_KEY_SIZE = mcleece::private_key::size();
 const unsigned mcleece_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE;
 
+const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE = mcleece::easy::PUBLIC_KEY_SIZE;
+const unsigned mcleece_crypto_box_SECRET_KEY_SIZE = mcleece::easy::SECRET_KEY_SIZE;
+const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::easy::MESSAGE_HEADER_SIZE;
+
 int mcleece_keypair(unsigned char* pubk, unsigned char* secret)
 {
 	return mcleece::actions::keypair(pubk, secret);
@@ -26,18 +31,37 @@ int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const cha
 	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length));
 }
 
-int mcleece_encrypt(unsigned char* ciphertext, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
+int mcleece_crypto_box_keypair(unsigned char* pubk, unsigned char* secret)
+{
+	return mcleece::easy::crypto_box_keypair(pubk, secret);
+}
+
+int mcleece_encrypt(unsigned char* ciphertext_out, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
 {
 	mcleece::byte_view is(msg, msg_length);
-	mcleece::byte_view os(ciphertext, msg_length + mcleece_MESSAGE_HEADER_SIZE);
+	mcleece::byte_view os(ciphertext_out, msg_length + mcleece_MESSAGE_HEADER_SIZE);
 	return mcleece::actions::encrypt(recipient_pubk, is, os);
 }
 
-int mcleece_decrypt(unsigned char* decrypted, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_secret)
+int mcleece_decrypt(unsigned char* decrypted_out, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_secret)
 {
 	mcleece::byte_view is(ciphertext, ciphertext_length);
-	mcleece::byte_view os(decrypted, ciphertext_length - mcleece_MESSAGE_HEADER_SIZE);
+	mcleece::byte_view os(decrypted_out, ciphertext_length - mcleece_MESSAGE_HEADER_SIZE);
 	return mcleece::actions::decrypt(recipient_secret, is, os);
+}
+
+int mcleece_crypto_box_seal(unsigned char* ciphertext_out, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
+{
+	mcleece::byte_view is(msg, msg_length);
+	mcleece::byte_view os(ciphertext_out, msg_length + mcleece_crypto_box_MESSAGE_HEADER_SIZE);
+	return mcleece::easy::crypto_box_seal(os, is, recipient_pubk);
+}
+
+int mcleece_crypto_box_seal_open(unsigned char* decrypted_out, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_pubk, unsigned char* recipient_secret)
+{
+	mcleece::byte_view is(ciphertext, ciphertext_length);
+	mcleece::byte_view os(decrypted_out, ciphertext_length - mcleece_crypto_box_MESSAGE_HEADER_SIZE);
+	return mcleece::easy::crypto_box_seal_open(os, is, recipient_pubk, recipient_secret);
 }
 
 int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
