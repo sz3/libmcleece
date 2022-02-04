@@ -4,12 +4,14 @@
 #include "util/byte_view.h"
 
 #include "mceliece8192128/crypto_kem.h"
+#include "sodium/crypto_secretbox.h"
 #include <array>
 #include <string>
 #include <vector>
 
-namespace mcleece {
+static_assert(crypto_kem_BYTES == crypto_secretbox_KEYBYTES, "kem != secretbox keysize. Contemplate meaning of life");
 
+namespace mcleece {
 
 // this class currently serves two distinct purposes right now, which is interesting
 // maybe a protected subclass with the "more public" methods? (and hiding the data accessors?)
