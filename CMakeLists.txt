@@ -28,7 +28,7 @@ set (PROJECTS
 	src/third_party_lib/base64
 	src/third_party_lib/getline
 	src/third_party_lib/libkeccak
-	src/third_party_lib/mceliece8192128
+	src/third_party_lib/mceliece6960119f
 )
 
 include_directories(

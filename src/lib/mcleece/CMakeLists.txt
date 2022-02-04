@@ -20,7 +20,7 @@ add_library(mcleece SHARED ${SOURCES})
 
 target_link_libraries(mcleece_static
 
-	mceliece8192128
+	mceliece6960119f
 
 	getline
 	keccak
@@ -32,7 +32,7 @@ target_link_libraries(mcleece_static
 
 target_link_libraries(mcleece
 
-	mceliece8192128
+	mceliece6960119f
 
 	getline
 	keccak

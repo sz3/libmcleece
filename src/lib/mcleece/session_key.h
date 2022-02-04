@@ -3,7 +3,7 @@
 
 #include "util/byte_view.h"
 
-#include "mceliece8192128/crypto_kem.h"
+#include "mceliece6960119f/crypto_kem.h"
 #include "sodium/crypto_secretbox.h"
 #include <array>
 #include <string>

@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece8192128/crypto_kem.h"
+#include "mceliece6960119f/crypto_kem.h"
 #include <fstream>
 #include <iostream>
 #include <string>
