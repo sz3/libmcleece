@@ -6,9 +6,6 @@
 extern "C" {
 #endif
 
-static const int mcleece_flag_rawbinary = 0;
-static const int mcleece_flag_base64 = 1;
-
 extern const unsigned mcleece_PUBLIC_KEY_SIZE;
 extern const unsigned mcleece_SECRET_KEY_SIZE;
 extern const unsigned mcleece_MESSAGE_HEADER_SIZE;

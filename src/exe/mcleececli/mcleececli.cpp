@@ -62,7 +62,6 @@ int main(int argc, char** argv)
 	    ("k,key-path", "Path to key or keypair (default: {cwd}/identity)", cxxopts::value<string>())
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
-	    ("b,binary", "Treat ciphertext as binary, not base64 encoded (default: base64)", cxxopts::value<bool>())
 	    ("h,help", "Print usage")
 	;
 	options.parse_positional({"command", "input", "output"});
@@ -72,8 +71,6 @@ int main(int argc, char** argv)
 	auto result = options.parse(argc, argv);
 	if (result.count("help") or !result.count("command"))
 		return help(options);
-
-	bool b64 = !result.count("binary");
 
 	bool autokey = true;
 	string key_path = fmt::format("{}/{}", get_working_path(), "identity");
@@ -110,7 +107,7 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 
 		string output = result["output"].as<string>();
-		int flags = b64? mcleece_flag_base64 : 0;
+		int flags = 0;
 
 		if (output.empty())
 			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), flags);
@@ -133,7 +130,7 @@ int main(int argc, char** argv)
 
 		string pw = get_pw();
 		string output = result["output"].as<string>();
-		int flags = b64? mcleece_flag_base64 : 0;
+		int flags = 0;
 
 		if (output.empty())
 			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
