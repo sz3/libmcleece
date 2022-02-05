@@ -70,27 +70,30 @@ namespace easy {
 		return 0;
 	}
 
-	// message should be sized to the plaintext message -- but its underlying memory buffer must be len(message) + MESSAGE_HEADER_SIZE!
+	// `message` should be plaintext sized to len(message) + MESSAGE_HEADER_SIZE
 	inline int cbox_seal_nomalloc(mcleece::byte_view& message, mcleece::byte_view& scratch, const unsigned char* pubk)
 	{
 		// message contains the data going on, and will be overwritten with the final ciphertext.
 		// scratch will hold the intermediate representation -- a normal libsodium crypto_box_seal result
 		// inner layer: crypto_box. outer layer: libmcleece encrypt
-		if (scratch.size() < message.size() + crypto_box_SEALBYTES)
+		if (message.size() < MESSAGE_HEADER_SIZE)
 			return 65;
 
-		int res = ::crypto_box_seal(const_cast<unsigned char*>(scratch.data()), message.data(), message.size(), pubk);
+		if (scratch.size() < message.size() - mcleece::actions::MESSAGE_HEADER_SIZE)
+			return 65;
+
+		mcleece::byte_view input(message.data(), message.size() - MESSAGE_HEADER_SIZE);
+		int res = ::crypto_box_seal(const_cast<unsigned char*>(scratch.data()), input.data(), input.size(), pubk);
 		if (res != 0)
 			return 69;
 
 		pubk += crypto_box_PUBLICKEYBYTES;
 
-		mcleece::byte_view ciphertext(message.data(), message.size() + MESSAGE_HEADER_SIZE);
+		mcleece::byte_view ciphertext = message;
 		res = mcleece::actions::encrypt(ciphertext, scratch, pubk);
 		if (res != 0)
 			return 69 + res;
 
-		message = ciphertext;
 		return 0;
 	}
 
