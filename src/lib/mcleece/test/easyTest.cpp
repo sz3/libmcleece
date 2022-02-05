@@ -56,16 +56,19 @@ TEST_CASE( "easyTest/testNomallocRoundtrip", "[unit]" )
 
 	string message = "hello friends";
 	message.resize(message.size() + mcleece_crypto_box_MESSAGE_HEADER_SIZE);
+	assertTrue( message.substr(0, 5) == "hello" );
 
 	{
 		std::vector<unsigned char> scratch;
 		scratch.resize(message.size() - mcleece_MESSAGE_HEADER_SIZE);
 		int res = mcleece_cbox_seal_nomalloc(reinterpret_cast<unsigned char*>(message.data()), message.size(), scratch.data(), pubk.data());
 		assertEquals( 0, res );
+
+		// assert we can decrypt the libsodium part from `scratch`??
 	}
 
 	// message is now our encrypted buffer
-	assertTrue( message.substr(5) != "hello" );
+	assertTrue( message.substr(0, 5) != "hello" );
 
 	{
 		std::vector<unsigned char> scratch;
@@ -74,6 +77,7 @@ TEST_CASE( "easyTest/testNomallocRoundtrip", "[unit]" )
 		assertEquals(0, res);
 	}
 
+	message.resize(13);
 	assertEquals( "hello friends", message );
 }
 
