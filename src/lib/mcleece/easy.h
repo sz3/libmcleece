@@ -14,7 +14,7 @@ namespace easy {
 
 	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key::size() + crypto_box_PUBLICKEYBYTES;
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key::size() + crypto_box_SECRETKEYBYTES;
-	static const unsigned MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE + crypto_box_SEALBYTES;
+	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE + crypto_box_SEALBYTES;
 
 	inline int crypto_box_keypair(unsigned char* pubk, unsigned char* secret)
 	{
@@ -31,7 +31,7 @@ namespace easy {
 
 	inline int crypto_box_seal(mcleece::byte_view& output_c, mcleece::byte_view message, const unsigned char* pubk)
 	{
-		if (output_c.size() < message.size() + MESSAGE_HEADER_SIZE)
+		if (output_c.size() < message.size() + FULL_MESSAGE_HEADER_SIZE)
 			return 65;
 
 		// inner layer: crypto_box. outer layer: libmcleece encrypt
@@ -52,7 +52,7 @@ namespace easy {
 
 	inline int crypto_box_seal_open(mcleece::byte_view& output_m, mcleece::byte_view ciphertext, const unsigned char* pubk, const unsigned char* secret)
 	{
-		if (ciphertext.size() < MESSAGE_HEADER_SIZE)
+		if (ciphertext.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;
 
 		std::string scratch;
@@ -76,13 +76,12 @@ namespace easy {
 		// message contains the data going on, and will be overwritten with the final ciphertext.
 		// scratch will hold the intermediate representation -- a normal libsodium crypto_box_seal result
 		// inner layer: crypto_box. outer layer: libmcleece encrypt
-		if (message.size() < MESSAGE_HEADER_SIZE)
+		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;
-
 		if (scratch.size() < message.size() - mcleece::actions::MESSAGE_HEADER_SIZE)
-			return 65;
+			return 66;
 
-		mcleece::byte_view input(message.data(), message.size() - MESSAGE_HEADER_SIZE);
+		mcleece::byte_view input(message.data(), message.size() - FULL_MESSAGE_HEADER_SIZE);
 		int res = ::crypto_box_seal(const_cast<unsigned char*>(scratch.data()), input.data(), input.size(), pubk);
 		if (res != 0)
 			return 69;
@@ -99,7 +98,7 @@ namespace easy {
 
 	inline int cbox_seal_open_nomalloc(mcleece::byte_view& message, mcleece::byte_view& scratch, const unsigned char* pubk, const unsigned char* secret)
 	{
-		if (message.size() < MESSAGE_HEADER_SIZE)
+		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;
 		if (scratch.size() < crypto_box_SEALBYTES)
 			return 66;
@@ -112,7 +111,7 @@ namespace easy {
 		if (res != 0)
 			return 69;
 
-		message = {message.data(), message.size() - MESSAGE_HEADER_SIZE};
+		message = {message.data(), message.size() - FULL_MESSAGE_HEADER_SIZE};
 		return 0;
 	}
 }}

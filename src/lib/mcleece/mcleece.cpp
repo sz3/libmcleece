@@ -19,7 +19,7 @@ const unsigned mcleece_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SI
 
 const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE = mcleece::easy::PUBLIC_KEY_SIZE;
 const unsigned mcleece_crypto_box_SECRET_KEY_SIZE = mcleece::easy::SECRET_KEY_SIZE;
-const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::easy::MESSAGE_HEADER_SIZE;
+const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::easy::FULL_MESSAGE_HEADER_SIZE;
 
 int mcleece_keypair(unsigned char* pubk, unsigned char* secret)
 {
