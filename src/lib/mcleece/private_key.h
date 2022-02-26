@@ -1,6 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include "constants.h"
 #include "mceliece6960119f/crypto_kem.h"
 #include "util/File.h"
 
@@ -12,11 +13,20 @@
 
 namespace mcleece {
 
+template <int MODE>
 class private_key
 {
+public:
+	static constexpr unsigned size()
+	{
+		if (MODE == SIMPLE)
+			return SIMPLE_SECRET_KEY_SIZE;
+		else
+			return CBOX_SECRET_KEY_SIZE;
+	}
+
 protected:
-	static const int SIZE = crypto_kem_SECRETKEYBYTES;
-	using DATA_ARRAY = std::array<unsigned char, SIZE>;
+	using DATA_ARRAY = std::array<unsigned char, size()>;
 	using SALT_ARRAY = std::array<unsigned char, crypto_pwhash_scryptsalsa208sha256_SALTBYTES>;
 
 protected:
@@ -27,11 +37,6 @@ protected:
 		                                          crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE) == 0;
 	}
 
-public:
-	static constexpr unsigned size()
-	{
-		return SIZE;
-	}
 
 public:
 	private_key()

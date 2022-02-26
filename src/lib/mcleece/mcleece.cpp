@@ -13,7 +13,7 @@ using std::string;
 extern "C" {
 
 const unsigned mcleece_simple_PUBLIC_KEY_SIZE = mcleece::public_key_simple::size();
-const unsigned mcleece_simple_SECRET_KEY_SIZE = mcleece::private_key::size();
+const unsigned mcleece_simple_SECRET_KEY_SIZE = mcleece::private_key<mcleece::SIMPLE>::size();
 const unsigned mcleece_simple_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE;
 
 const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE = mcleece::easy::PUBLIC_KEY_SIZE;

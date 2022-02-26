@@ -14,8 +14,8 @@
 namespace mcleece {
 namespace easy {
 
-	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key_cbox::size();
-	static const unsigned SECRET_KEY_SIZE = mcleece::private_key::size() + crypto_box_SECRETKEYBYTES;
+	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key<CBOX>::size();
+	static const unsigned SECRET_KEY_SIZE = mcleece::private_key<CBOX>::size();
 	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE + crypto_box_SEALBYTES;
 
 	inline int crypto_box_keypair(unsigned char* pubk, unsigned char* secret)

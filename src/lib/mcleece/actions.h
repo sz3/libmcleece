@@ -172,7 +172,7 @@ namespace actions {
 	template <typename INSTREAM, typename OUTSTREAM>
 	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		mcleece::private_key secret = mcleece::private_key::from_file(keypath, pw);
+		mcleece::private_key secret = mcleece::private_key<SIMPLE>::from_file(keypath, pw);
 		return decrypt(secret.data(), is, os, max_length);
 	}
 }}

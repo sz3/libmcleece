@@ -13,4 +13,7 @@ static constexpr int CBOX = 1;
 static constexpr unsigned SIMPLE_PUBLIC_KEY_SIZE = crypto_kem_PUBLICKEYBYTES;
 static constexpr unsigned CBOX_PUBLIC_KEY_SIZE = SIMPLE_PUBLIC_KEY_SIZE + crypto_box_PUBLICKEYBYTES;
 
+static constexpr unsigned SIMPLE_SECRET_KEY_SIZE = crypto_kem_SECRETKEYBYTES;
+static constexpr unsigned CBOX_SECRET_KEY_SIZE = SIMPLE_SECRET_KEY_SIZE + crypto_box_SECRETKEYBYTES;
+
 }

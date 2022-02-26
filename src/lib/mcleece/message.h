@@ -114,7 +114,8 @@ namespace mcleece
 		return {{session, n}};
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const private_key& secret)
+	template <int MODE>
+	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const private_key<MODE>& secret)
 	{
 		return decode_session(data, secret.data());
 	}

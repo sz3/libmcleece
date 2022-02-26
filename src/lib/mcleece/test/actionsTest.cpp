@@ -54,7 +54,7 @@ TEST_CASE( "messageTest/testEncrypt", "[unit]" )
 	MakeTempDirectory tempdir;
 
 	TestHelpers::generate_keypair(tempdir.path() / "test");
-	mcleece::private_key secret = mcleece::private_key::from_file(tempdir.path() / "test.sk", "password");
+	mcleece::private_key secret = mcleece::private_key<mcleece::SIMPLE>::from_file(tempdir.path() / "test.sk", "password");
 
 	{
 		std::ofstream f(tempdir.path() / "helloworld");
