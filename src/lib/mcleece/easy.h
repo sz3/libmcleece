@@ -71,7 +71,7 @@ namespace easy {
 	}
 
 	// `message` should be plaintext sized to len(message) + MESSAGE_HEADER_SIZE
-	inline int cbox_seal_nomalloc(mcleece::byte_view& message, mcleece::byte_view& scratch, const unsigned char* pubk)
+	inline int inplace_crypto_box_seal(mcleece::byte_view& message, mcleece::byte_view& scratch, const unsigned char* pubk)
 	{
 		// message contains the data going on, and will be overwritten with the final ciphertext.
 		// scratch will hold the intermediate representation -- a normal libsodium crypto_box_seal result
@@ -96,7 +96,7 @@ namespace easy {
 		return 0;
 	}
 
-	inline int cbox_seal_open_nomalloc(mcleece::byte_view& message, mcleece::byte_view& scratch, const unsigned char* pubk, const unsigned char* secret)
+	inline int inplace_crypto_box_seal_open(mcleece::byte_view& message, mcleece::byte_view& scratch, const unsigned char* pubk, const unsigned char* secret)
 	{
 		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;

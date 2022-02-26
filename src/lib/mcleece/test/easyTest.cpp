@@ -60,8 +60,8 @@ TEST_CASE( "easyTest/testNomallocRoundtrip", "[unit]" )
 
 	{
 		std::vector<unsigned char> scratch;
-		scratch.resize(message.size() - mcleece_MESSAGE_HEADER_SIZE);
-		int res = mcleece_cbox_seal_nomalloc(reinterpret_cast<unsigned char*>(message.data()), message.size(), scratch.data(), pubk.data());
+		scratch.resize(message.size() - mcleece_simple_MESSAGE_HEADER_SIZE);
+		int res = mcleece_inplace_crypto_box_seal(reinterpret_cast<unsigned char*>(message.data()), message.size(), scratch.data(), pubk.data());
 		assertEquals( 0, res );
 
 		// assert we can decrypt the libsodium part from `scratch`??
@@ -72,8 +72,8 @@ TEST_CASE( "easyTest/testNomallocRoundtrip", "[unit]" )
 
 	{
 		std::vector<unsigned char> scratch;
-		scratch.resize(message.size() - mcleece_MESSAGE_HEADER_SIZE);
-		int res = mcleece_cbox_seal_open_nomalloc(reinterpret_cast<unsigned char*>(message.data()), message.size(), scratch.data(), pubk.data(), secret.data());
+		scratch.resize(message.size() - mcleece_simple_MESSAGE_HEADER_SIZE);
+		int res = mcleece_inplace_crypto_box_seal_open(reinterpret_cast<unsigned char*>(message.data()), message.size(), scratch.data(), pubk.data(), secret.data());
 		assertEquals(0, res);
 	}
 
