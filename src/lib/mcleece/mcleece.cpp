@@ -25,7 +25,9 @@ const int mcleece_MODE_CRYPTO_BOX = mcleece::CBOX;
 
 int mcleece_simple_keypair(unsigned char* pubk, unsigned char* secret)
 {
-	return mcleece::actions::keypair(pubk, secret);
+	mcleece::public_key_simple pk(pubk);
+	mcleece::private_key_simple sk(secret);
+	return mcleece::actions::keypair(pk, sk);
 }
 
 int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode)

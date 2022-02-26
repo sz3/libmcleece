@@ -46,8 +46,7 @@ public:
 
 	private_key(const unsigned char* buff)
 	    : _view(buff, size())
-	{
-	}
+	{}
 
 	static private_key from_file(std::string filename, std::string pw)
 	{
@@ -62,9 +61,12 @@ public:
 		return _good;
 	}
 
-	unsigned char* data_write()
+	unsigned char* data()
 	{
-		return _data.data();
+		if (_view.size())
+			return const_cast<unsigned char*>(_view.data());
+		else
+			return _data.data();
 	}
 
 	const unsigned char* data() const

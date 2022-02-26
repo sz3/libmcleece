@@ -23,9 +23,9 @@ namespace easy {
 		if (::crypto_box_keypair(pubk, secret) != 0)
 			return 69;
 
-		pubk += crypto_box_PUBLICKEYBYTES;
-		secret += crypto_box_SECRETKEYBYTES;
-		if (mcleece::actions::keypair(pubk, secret) != 0)
+		mcleece::public_key_simple pk(pubk + crypto_box_PUBLICKEYBYTES);
+		mcleece::private_key_simple sk(secret + crypto_box_SECRETKEYBYTES);
+		if (mcleece::actions::keypair(pk, sk) != 0)
 			return 70;
 
 		return 0;

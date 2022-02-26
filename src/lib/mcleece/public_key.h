@@ -44,9 +44,12 @@ public:
 		return pk;
 	}
 
-	unsigned char* data_write()
+	unsigned char* data()
 	{
-		return _data.data();
+		if (_view.size())
+			return const_cast<unsigned char*>(_view.data());
+		else
+			return _data.data();
 	}
 
 	const unsigned char* data() const

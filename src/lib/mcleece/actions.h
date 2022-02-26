@@ -23,7 +23,7 @@ namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
 	static const unsigned MESSAGE_HEADER_SIZE = mcleece::session_header_size() + crypto_secretbox_macbytes();
 
-	inline int keypair(unsigned char* pubk, unsigned char* secret)
+	inline int keypair(mcleece::public_key_simple& pubk, mcleece::private_key_simple& secret)
 	{
 		return mcleece::generate_keypair(pubk, secret);
 	}

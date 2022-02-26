@@ -16,13 +16,13 @@ TEST_CASE( "private_keyTest/testSaveLoad.Simple", "[unit]" )
 {
 	MakeTempDirectory tempdir;
 
-	mcleece::private_key<mcleece::SIMPLE> sec;
+	mcleece::private_key_simple sec;
 	for (unsigned i = 0; i < sec.size(); ++i)
-		sec.data_write()[i] = 48 + (i % 10);
+		sec.data()[i] = 48 + (i % 10);
 
 	assertTrue( sec.save(tempdir.path() / "foo.sk", "password") );
 
-	mcleece::private_key rek = mcleece::private_key<mcleece::SIMPLE>::from_file(tempdir.path() / "foo.sk", "password");
+	mcleece::private_key rek = mcleece::private_key_simple::from_file(tempdir.path() / "foo.sk", "password");
 
 	string expected(reinterpret_cast<const char*>(sec.data()), sec.size());
 	string actual(reinterpret_cast<const char*>(rek.data()), rek.size());
@@ -33,13 +33,13 @@ TEST_CASE( "private_keyTest/testSaveLoad.Cbox", "[unit]" )
 {
 	MakeTempDirectory tempdir;
 
-	mcleece::private_key<mcleece::CBOX> sec;
+	mcleece::private_key_cbox sec;
 	for (unsigned i = 0; i < sec.size(); ++i)
-		sec.data_write()[i] = 48 + (i % 10);
+		sec.data()[i] = 48 + (i % 10);
 
 	assertTrue( sec.save(tempdir.path() / "foo.sk", "password") );
 
-	mcleece::private_key rek = mcleece::private_key<mcleece::CBOX>::from_file(tempdir.path() / "foo.sk", "password");
+	mcleece::private_key rek = mcleece::private_key_cbox::from_file(tempdir.path() / "foo.sk", "password");
 
 	string expected(reinterpret_cast<const char*>(sec.data()), sec.size());
 	string actual(reinterpret_cast<const char*>(rek.data()), rek.size());
