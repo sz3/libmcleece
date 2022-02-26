@@ -20,7 +20,7 @@ TEST_CASE( "apiCliTest/testFileRoundtrip", "[unit]" )
 	string password = "password";
 
 	{
-		int res = mcleece_keypair_to_file(keypath.data(), keypath.size(), password.data(), password.size());
+		int res = mcleece_keypair_to_file(keypath.data(), keypath.size(), password.data(), password.size(), mcleece::SIMPLE);
 		assertEquals( 0, res );
 	}
 

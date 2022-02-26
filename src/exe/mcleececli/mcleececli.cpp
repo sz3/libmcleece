@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 	    ("k,key-path", "Path to key or keypair (default: {cwd}/identity)", cxxopts::value<string>())
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
+	    ("s,simple", "Simple mceliece mode. Don't use x25519 cryptobox layer.", cxxopts::value<bool>())
 	    ("h,help", "Print usage")
 	;
 	options.parse_positional({"command", "input", "output"});
@@ -71,6 +72,8 @@ int main(int argc, char** argv)
 	auto result = options.parse(argc, argv);
 	if (result.count("help") or !result.count("command"))
 		return help(options);
+
+	bool simple = result.count("simple");
 
 	bool autokey = true;
 	string key_path = fmt::format("{}/{}", get_working_path(), "identity");
@@ -90,7 +93,7 @@ int main(int argc, char** argv)
 			return help(options, "key-path is not a writable prefix!");
 
 		string pw = get_pw();
-		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size());
+		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size(), simple);
 	}
 
 	if (command == "encrypt")

@@ -7,6 +7,7 @@ set(SOURCES
 	mcleece.h
 
 	actions.h
+	constants.h
 	easy.h
 	keygen.h
 	message.h

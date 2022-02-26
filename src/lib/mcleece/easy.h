@@ -9,10 +9,12 @@
 #include <string>
 #include <vector>
 
+// rename to mcleece::cbox ???
+
 namespace mcleece {
 namespace easy {
 
-	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key::size() + crypto_box_PUBLICKEYBYTES;
+	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key_cbox::size();
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key::size() + crypto_box_SECRETKEYBYTES;
 	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE + crypto_box_SEALBYTES;
 

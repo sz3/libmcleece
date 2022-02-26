@@ -2,6 +2,7 @@
 #include "mcleece.h"
 
 #include "actions.h"
+#include "constants.h"
 #include "easy.h"
 #include "message.h"
 #include "util/byte_view.h"
@@ -11,7 +12,7 @@ using std::string;
 
 extern "C" {
 
-const unsigned mcleece_simple_PUBLIC_KEY_SIZE = mcleece::public_key::size();
+const unsigned mcleece_simple_PUBLIC_KEY_SIZE = mcleece::public_key_simple::size();
 const unsigned mcleece_simple_SECRET_KEY_SIZE = mcleece::private_key::size();
 const unsigned mcleece_simple_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE;
 
@@ -19,14 +20,17 @@ const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE = mcleece::easy::PUBLIC_KEY_SI
 const unsigned mcleece_crypto_box_SECRET_KEY_SIZE = mcleece::easy::SECRET_KEY_SIZE;
 const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::easy::FULL_MESSAGE_HEADER_SIZE;
 
+const int mcleece_MODE_SIMPLE = mcleece::SIMPLE;
+const int mcleece_MODE_CRYPTO_BOX = mcleece::CBOX;
+
 int mcleece_simple_keypair(unsigned char* pubk, unsigned char* secret)
 {
 	return mcleece::actions::keypair(pubk, secret);
 }
 
-int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length)
+int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode)
 {
-	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length));
+	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length), mode);
 }
 
 int mcleece_crypto_box_keypair(unsigned char* pubk, unsigned char* secret)

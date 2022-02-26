@@ -17,14 +17,16 @@ namespace mcleece
 		return crypto_kem_keypair(pubk, secret);
 	}
 
-	inline int generate_keypair(public_key& pubk, private_key& secret)
+	template <int MODE>
+	inline int generate_keypair(public_key<MODE>& pubk, private_key& secret)
 	{
 		return generate_keypair(pubk.data(), secret.data());
 	}
 
+	template <int MODE>
 	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)
 	{
-		public_key pubk;
+		public_key<MODE> pubk;
 		private_key secret;
 		int res = generate_keypair(pubk, secret);
 		if (res != 0)
@@ -42,7 +44,8 @@ namespace mcleece
 		return key;
 	}
 
-	inline session_key generate_session_key(const public_key& pubk)
+	template <int MODE>
+	inline session_key generate_session_key(const public_key<MODE>& pubk)
 	{
 		return generate_session_key(pubk.data());
 	}

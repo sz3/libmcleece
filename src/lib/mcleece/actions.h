@@ -1,6 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include "constants.h"
 #include "keygen.h"
 #include "message.h"
 
@@ -13,6 +14,10 @@
 // return codes attempt to match https://www.freebsd.org/cgi/man.cgi?query=sysexits
 // ... emphasis on "attempt". I think of it like picking from HTTP status codes...
 
+// rename to mcleece::simple ???
+// but keep the high-level actions here?? :hmm:
+// or maybe put all the api stuff into a mcleece.hpp ...
+
 namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
@@ -23,9 +28,14 @@ namespace actions {
 		return mcleece::generate_keypair(pubk, secret);
 	}
 
-	inline int keypair_to_file(std::string keypath, std::string pw)
+	inline int keypair_to_file(std::string keypath, std::string pw, int mode)
 	{
-		return mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
+		std::string pk = fmt::format("{}.pk", keypath);
+		std::string sk = fmt::format("{}.sk", keypath);
+		if (mode == SIMPLE)
+			return mcleece::generate_keypair<SIMPLE>(pk, sk, pw);
+		else // mode == CBOX
+			return mcleece::generate_keypair<CBOX>(pk, sk, pw);
 	}
 
 	inline int encrypt(mcleece::byte_view output_c, mcleece::byte_view message, const unsigned char* pubk)
@@ -110,7 +120,7 @@ namespace actions {
 	template <typename INSTREAM, typename OUTSTREAM>
 	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		mcleece::public_key pubk = mcleece::public_key::from_file(keypath);
+		mcleece::public_key pubk = mcleece::public_key_simple::from_file(keypath);
 		return encrypt(pubk.data(), is, os, max_length);
 	}
 

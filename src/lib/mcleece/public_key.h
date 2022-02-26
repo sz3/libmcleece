@@ -1,7 +1,8 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece6960119f/crypto_kem.h"
+#include "constants.h"
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -12,12 +13,16 @@
 
 namespace mcleece {
 
+template <int MODE>
 class public_key
 {
 public:
 	static constexpr unsigned size()
 	{
-		return crypto_kem_PUBLICKEYBYTES;
+		if (MODE == SIMPLE)
+			return SIMPLE_PUBLIC_KEY_SIZE;
+		else
+			return CBOX_PUBLIC_KEY_SIZE;
 	}
 
 public:
@@ -65,5 +70,8 @@ public:
 protected:
 	std::vector<unsigned char> _data;
 };
+
+using public_key_simple = public_key<SIMPLE_PUBLIC_KEY_SIZE>;
+using public_key_cbox = public_key<CBOX_PUBLIC_KEY_SIZE>;
 
 }
