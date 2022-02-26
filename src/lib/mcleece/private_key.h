@@ -44,7 +44,7 @@ public:
 	    : _view(static_cast<unsigned char*>(nullptr), 0)
 	{}
 
-	private_key(const unsigned char* buff)
+	explicit private_key(const unsigned char* buff)
 	    : _view(buff, size())
 	{}
 

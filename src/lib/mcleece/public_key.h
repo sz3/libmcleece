@@ -32,7 +32,7 @@ public:
 	    , _data(size())
 	{}
 
-	public_key(const unsigned char* data)
+	explicit public_key(const unsigned char* data)
 	    : _view(data, size())
 	{
 	}

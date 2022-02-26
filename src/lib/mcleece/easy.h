@@ -18,13 +18,13 @@ namespace easy {
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key_cbox::size();
 	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::actions::MESSAGE_HEADER_SIZE + crypto_box_SEALBYTES;
 
-	inline int crypto_box_keypair(unsigned char* pubk, unsigned char* secret)
+	inline int crypto_box_keypair(public_key_cbox& pubk, private_key_cbox& secret)
 	{
-		if (::crypto_box_keypair(pubk, secret) != 0)
+		if (::crypto_box_keypair(pubk.data(), secret.data()) != 0)
 			return 69;
 
-		mcleece::public_key_simple pk(pubk + crypto_box_PUBLICKEYBYTES);
-		mcleece::private_key_simple sk(secret + crypto_box_SECRETKEYBYTES);
+		mcleece::public_key_simple pk(pubk.data() + crypto_box_PUBLICKEYBYTES);
+		mcleece::private_key_simple sk(secret.data() + crypto_box_SECRETKEYBYTES);
 		if (mcleece::actions::keypair(pk, sk) != 0)
 			return 70;
 

@@ -103,7 +103,7 @@ namespace mcleece
 		return buff;
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const unsigned char* secret)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const private_key_simple& secret)
 	{
 		if (data.size() < session_header_size())
 			return {};
@@ -112,11 +112,5 @@ namespace mcleece
 		auto session = mcleece::decode_session_key(sbuff, secret);
 		nonce n(data.data() + session_key::size());
 		return {{session, n}};
-	}
-
-	template <int MODE>
-	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const private_key<MODE>& secret)
-	{
-		return decode_session(data, secret.data());
 	}
 }
