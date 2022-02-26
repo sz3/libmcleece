@@ -38,7 +38,7 @@ namespace actions {
 			return mcleece::generate_keypair<CBOX>(pk, sk, pw);
 	}
 
-	inline int encrypt(mcleece::byte_view output_c, mcleece::byte_view message, const unsigned char* pubk)
+	inline int encrypt(mcleece::byte_view output_c, mcleece::byte_view message, const mcleece::public_key_simple& pubk)
 	{
 		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
 		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
@@ -59,7 +59,7 @@ namespace actions {
 		return 0;
 	}
 
-	inline int decrypt(mcleece::byte_view output_m, mcleece::byte_view ciphertext, const unsigned char* secret)
+	inline int decrypt(mcleece::byte_view output_m, mcleece::byte_view ciphertext, const mcleece::private_key_simple& secret)
 	{
 		// extract the session from the front of the input
 		if (ciphertext.size() < mcleece::session_header_size())

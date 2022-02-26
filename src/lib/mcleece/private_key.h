@@ -124,4 +124,7 @@ protected:
 	bool _good = true;
 };
 
+using private_key_simple = private_key<SIMPLE>;
+using private_key_cbox = private_key<CBOX>;
+
 }
