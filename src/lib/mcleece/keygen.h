@@ -20,7 +20,7 @@ namespace mcleece
 	template <int MODE>
 	inline int generate_keypair(public_key<MODE>& pubk, private_key<MODE>& secret)
 	{
-		return generate_keypair(pubk.data(), secret.data());
+		return generate_keypair(pubk.data_write(), secret.data_write());
 	}
 
 	template <int MODE>

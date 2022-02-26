@@ -2,6 +2,7 @@
 #pragma once
 
 #include "constants.h"
+#include "util/byte_view.h"
 
 #include <fstream>
 #include <iostream>
@@ -27,13 +28,13 @@ public:
 
 public:
 	public_key()
-	    : _data(size())
+	    : _view(static_cast<unsigned char*>(nullptr), 0)
+	    , _data(size())
 	{}
 
 	public_key(const unsigned char* data)
-	    : _data(size())
+	    : _view(data, size())
 	{
-		std::copy(data, data+size(), &_data[0]);
 	}
 
 	static public_key from_file(std::string filename)
@@ -43,14 +44,17 @@ public:
 		return pk;
 	}
 
-	unsigned char* data()
+	unsigned char* data_write()
 	{
 		return _data.data();
 	}
 
 	const unsigned char* data() const
 	{
-		return _data.data();
+		if (_view.size())
+			return _view.data();
+		else
+			return _data.data();
 	}
 
 	bool save(const std::string& filename) const
@@ -68,6 +72,7 @@ public:
 	}
 
 protected:
+	const mcleece::byte_view _view;
 	std::vector<unsigned char> _data;
 };
 
