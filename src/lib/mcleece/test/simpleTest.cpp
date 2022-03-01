@@ -7,7 +7,6 @@
 
 #include "util/MakeTempDirectory.h"
 
-#include "PicoSHA2/picosha2.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
