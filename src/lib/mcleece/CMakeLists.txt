@@ -6,15 +6,15 @@ set(SOURCES
 	mcleece.cpp
 	mcleece.h
 
-	actions.h
+	cbox.h
 	constants.h
-	easy.h
 	keygen.h
 	message.h
 	nonce.h
 	private_key.h
 	public_key.h
 	session_key.h
+	simple.h
 )
 
 add_library(mcleece_static STATIC ${SOURCES})

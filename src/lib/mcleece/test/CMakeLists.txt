@@ -4,12 +4,12 @@ project(mcleece_test)
 
 set (SOURCES
 	test.cpp
-	actionsTest.cpp
 	apiTest.cpp
 	apiCliTest.cpp
-	easyTest.cpp
+	cboxTest.cpp
 	messageTest.cpp
 	private_keyTest.cpp
+	simpleTest.cpp
 )
 
 include_directories(

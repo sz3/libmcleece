@@ -8,7 +8,7 @@
 
 using std::string;
 
-TEST_CASE( "easyTest/testRoundtrip", "[unit]" )
+TEST_CASE( "cboxTest/testRoundtrip", "[unit]" )
 {
 	std::vector<unsigned char> pubk;
 	pubk.resize(mcleece_crypto_box_PUBLIC_KEY_SIZE);
@@ -40,7 +40,7 @@ TEST_CASE( "easyTest/testRoundtrip", "[unit]" )
 }
 
 
-TEST_CASE( "easyTest/testNomallocRoundtrip", "[unit]" )
+TEST_CASE( "cboxTest/testNomallocRoundtrip", "[unit]" )
 {
 	// alternative API to reuse the input buffer for output...
 	std::vector<unsigned char> pubk;

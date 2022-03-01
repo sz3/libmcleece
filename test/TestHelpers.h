@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mcleece/actions.h"
+#include "mcleece/simple.h"
 #include "serialize/format.h"
 #include "util/File.h"
 #include <experimental/filesystem>
@@ -20,7 +20,7 @@ namespace TestHelpers
 			return false;
 		}
 		else
-			mcleece::actions::keypair_to_file(target_prefix, "password", mcleece::SIMPLE);
+			mcleece::simple::keypair_to_file(target_prefix, "password", mcleece::SIMPLE);
 		return true;
 	}
 }

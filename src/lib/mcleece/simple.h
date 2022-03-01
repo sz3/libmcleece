@@ -14,12 +14,8 @@
 // return codes attempt to match https://www.freebsd.org/cgi/man.cgi?query=sysexits
 // ... emphasis on "attempt". I think of it like picking from HTTP status codes...
 
-// rename to mcleece::simple ???
-// but keep the high-level actions here?? :hmm:
-// or maybe put all the api stuff into a mcleece.hpp ...
-
 namespace mcleece {
-namespace actions {
+namespace simple {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
 	static const unsigned MESSAGE_HEADER_SIZE = mcleece::session_header_size() + crypto_secretbox_macbytes();
 
