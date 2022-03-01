@@ -17,8 +17,8 @@ TEST_CASE( "messageTest/testRoundtrip", "[unit]" )
 	MakeTempDirectory tempdir;
 
 	TestHelpers::generate_keypair(tempdir.path() / "test");
-	mcleece::public_key pubk = mcleece::public_key<mcleece::SIMPLE>::from_file(tempdir.path() / "test.pk");
-	mcleece::private_key secret = mcleece::private_key<mcleece::SIMPLE>::from_file(tempdir.path() / "test.sk", "password");
+	mcleece::public_key pubk = mcleece::public_key_simple::from_file(tempdir.path() / "test.pk");
+	mcleece::private_key secret = mcleece::private_key_simple::from_file(tempdir.path() / "test.sk", "password");
 
 	mcleece::session_key session = mcleece::keygen::generate_session_key(pubk);
 	mcleece::nonce n;
