@@ -6,6 +6,7 @@ set(SOURCES
 	mcleece.cpp
 	mcleece.h
 
+	actions.h
 	cbox.h
 	constants.h
 	keygen.h

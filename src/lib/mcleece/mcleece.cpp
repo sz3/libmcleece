@@ -1,6 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "mcleece.h"
 
+#include "actions.h"
 #include "cbox.h"
 #include "constants.h"
 #include "message.h"
@@ -92,30 +93,30 @@ int mcleece_inplace_crypto_box_seal_open(unsigned char* buff, unsigned ciphertex
 	return mcleece::cbox::inplace_crypto_box_seal_open(inout, scr, rpk, rsk);
 }
 
-int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
+int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int mode)
 {
 	std::ifstream istream(string(srcpath, srcpath_len), std::ios::binary);
 	std::ofstream f(string(dstpath, dstpath_len), std::ios::binary);
-	return mcleece::simple::encrypt(string(keypath, keypath_len), istream, f);
+	return mcleece::actions::encrypt(string(keypath, keypath_len), istream, f, mode);
 }
 
-int mcleece_encrypt_stdout(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, int flags)
+int mcleece_encrypt_stdout(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, int mode)
 {
 	std::ifstream istream(string(srcpath, srcpath_len), std::ios::binary);
-	return mcleece::simple::encrypt(string(keypath, keypath_len), istream, std::cout);
+	return mcleece::actions::encrypt(string(keypath, keypath_len), istream, std::cout, mode);
 }
 
-int mcleece_decrypt_file(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int flags)
+int mcleece_decrypt_file(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int mode)
 {
 	std::ifstream istream(string(srcpath, srcpath_len), std::ios::binary);
 	std::ofstream f(string(dstpath, dstpath_len), std::ios::binary);
-	return mcleece::simple::decrypt(string(keypath, keypath_len), string(pw, pw_length), istream, f);
+	return mcleece::actions::decrypt(string(keypath, keypath_len), string(pw, pw_length), istream, f, mode);
 }
 
-int mcleece_decrypt_stdout(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length, char* srcpath, unsigned srcpath_len, int flags)
+int mcleece_decrypt_stdout(char* keypath, unsigned keypath_len, char* pw, unsigned pw_length, char* srcpath, unsigned srcpath_len, int mode)
 {
 	std::ifstream istream(string(srcpath, srcpath_len), std::ios::binary);
-	return mcleece::simple::decrypt(string(keypath, keypath_len), string(pw, pw_length), istream, std::cout);
+	return mcleece::actions::decrypt(string(keypath, keypath_len), string(pw, pw_length), istream, std::cout, mode);
 }
 
 }

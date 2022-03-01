@@ -4,6 +4,7 @@ project(mcleece_test)
 
 set (SOURCES
 	test.cpp
+	actionsTest.cpp
 	apiTest.cpp
 	apiCliTest.cpp
 	cboxTest.cpp

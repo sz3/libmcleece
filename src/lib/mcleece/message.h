@@ -13,8 +13,9 @@
 #include <vector>
 #include <utility>
 
-namespace mcleece
-{
+namespace mcleece {
+namespace message {
+
 	inline int encrypt(mcleece::byte_view& ciphertext, const mcleece::byte_view& message, const session_key& session, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_keybytes())
@@ -113,4 +114,5 @@ namespace mcleece
 		nonce n(data.data() + session_key::size());
 		return {{session, n}};
 	}
-}
+
+}}

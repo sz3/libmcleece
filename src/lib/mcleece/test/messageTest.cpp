@@ -22,16 +22,16 @@ TEST_CASE( "messageTest/testRoundtrip", "[unit]" )
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
 	mcleece::nonce n;
-	std::string ciphertext = mcleece::encrypt("hello world", session, n);
-	std::string sessiontext = mcleece::encode_session(session, n);
+	std::string ciphertext = mcleece::message::encrypt("hello world", session, n);
+	std::string sessiontext = mcleece::message::encode_session(session, n);
 
-	auto session_nonce = mcleece::decode_session(sessiontext, secret);
+	auto session_nonce = mcleece::message::decode_session(sessiontext, secret);
 	assertTrue( session_nonce );
 
 	mcleece::session_key& enc_session = session_nonce->first;
 	mcleece::nonce& enc_n = session_nonce->second;
 
-	std::string message = mcleece::decrypt(ciphertext, enc_session, enc_n);
+	std::string message = mcleece::message::decrypt(ciphertext, enc_session, enc_n);
 	assertEquals( "hello world", message );
 }
 

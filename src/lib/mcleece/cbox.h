@@ -29,7 +29,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int crypto_box_seal(mcleece::byte_view& output_c, mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
+	inline int crypto_box_seal(mcleece::byte_view& output_c, const mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
 	{
 		if (output_c.size() < message.size() + FULL_MESSAGE_HEADER_SIZE)
 			return 65;
@@ -50,7 +50,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int crypto_box_seal_open(mcleece::byte_view& output_m, mcleece::byte_view ciphertext, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
+	inline int crypto_box_seal_open(mcleece::byte_view& output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
 	{
 		if (ciphertext.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;

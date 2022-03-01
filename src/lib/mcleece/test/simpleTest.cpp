@@ -31,22 +31,21 @@ TEST_CASE( "simpleTest/testDecrypt", "[unit]" )
 	MakeTempDirectory tempdir;
 
 	TestHelpers::generate_keypair(tempdir.path() / "test");
-	mcleece::public_key pubk = mcleece::public_key<mcleece::SIMPLE>::from_file(tempdir.path() / "test.pk");
+	mcleece::public_key pubk = mcleece::public_key_simple::from_file(tempdir.path() / "test.pk");
+	mcleece::private_key secret = mcleece::private_key_simple::from_file(tempdir.path() / "test.sk", "password");
 
 	mcleece::session_key session = mcleece::generate_session_key(pubk);
 	mcleece::nonce n;
-	std::string ciphertext = mcleece::encrypt("hello world", session, n);
-	std::string sessiontext = mcleece::encode_session(session, n);
+	std::string sessiontext = mcleece::message::encode_session(session, n);
+	std::string ciphertext = mcleece::message::encrypt("hello world", session, n);
 
-	{
-		std::ofstream f(tempdir.path() / "encrypted_msg");
-		f << sessiontext;
-		f << ciphertext;
-	}
+	ciphertext = sessiontext + ciphertext;
+	std::string decryptBuff;
+	decryptBuff.resize(ciphertext.size() - mcleece::simple::MESSAGE_HEADER_SIZE);
+	assertEquals( 11, decryptBuff.size() );
 
-	std::stringstream ss;
-	assertEquals(0, mcleece::simple::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), ss));
-	assertEquals( "hello world", ss.str() );
+	assertEquals( 0, mcleece::simple::decrypt(decryptBuff, ciphertext, secret) );
+	assertEquals( "hello world", decryptBuff );
 }
 
 TEST_CASE( "simpleTest/testEncrypt", "[unit]" )
@@ -54,25 +53,23 @@ TEST_CASE( "simpleTest/testEncrypt", "[unit]" )
 	MakeTempDirectory tempdir;
 
 	TestHelpers::generate_keypair(tempdir.path() / "test");
-	mcleece::private_key secret = mcleece::private_key<mcleece::SIMPLE>::from_file(tempdir.path() / "test.sk", "password");
+	mcleece::public_key pubk = mcleece::public_key_simple::from_file(tempdir.path() / "test.pk");
+	mcleece::private_key secret = mcleece::private_key_simple::from_file(tempdir.path() / "test.sk", "password");
 
-	{
-		std::ofstream f(tempdir.path() / "helloworld");
-		f << "hello friends";
-	}
+	std::string startBuff = "hello friends";
+	std::string encryptedBuff;
+	encryptedBuff.resize(startBuff.size() + mcleece::simple::MESSAGE_HEADER_SIZE);
 
-	std::stringstream ss;
-	assertEquals( 0, mcleece::simple::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "helloworld"), ss) );
+	assertEquals( 0, mcleece::simple::encrypt(encryptedBuff, startBuff, pubk) );
 
-	std::string enc_message = ss.str();
-	auto session_nonce = mcleece::decode_session(enc_message, secret);
+	auto session_nonce = mcleece::message::decode_session(encryptedBuff, secret);
 	assertTrue( session_nonce );
 
 	mcleece::session_key& enc_session = session_nonce->first;
 	mcleece::nonce& enc_n = session_nonce->second;
 
-	std::string ciphertext = enc_message.substr(mcleece::session_header_size());
-	std::string message = mcleece::decrypt(ciphertext, enc_session, enc_n);
+	std::string ciphertext = encryptedBuff.substr(mcleece::message::session_header_size());
+	std::string message = mcleece::message::decrypt(ciphertext, enc_session, enc_n);
 	assertEquals( "hello friends", message );
 }
 
@@ -81,47 +78,18 @@ TEST_CASE( "simpleTest/testRoundtrip", "[unit]" )
 	MakeTempDirectory tempdir;
 
 	TestHelpers::generate_keypair(tempdir.path() / "test");
+	mcleece::public_key pubk = mcleece::public_key_simple::from_file(tempdir.path() / "test.pk");
+	mcleece::private_key secret = mcleece::private_key_simple::from_file(tempdir.path() / "test.sk", "password");
 
-	{
-		std::ofstream f(tempdir.path() / "helloworld");
-		f << "hello friends";
-	}
+	std::string startMsg = "hello friendos";
+	std::string ciphertext;
+	ciphertext.resize(startMsg.size() + mcleece::simple::MESSAGE_HEADER_SIZE);
 
-	{
-		std::ofstream f(tempdir.path() / "encrypted_msg");
-		assertEquals( 0, mcleece::simple::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "helloworld"), f) );
-	}
+	assertEquals( 0, mcleece::simple::encrypt(ciphertext, startMsg, pubk) );
 
-	std::stringstream ss;
-	assertEquals(0, mcleece::simple::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), ss));
-	assertEquals( "hello friends", ss.str() );
+	std::string endMsg;
+	endMsg.resize(startMsg.size());
+
+	assertEquals( 0, mcleece::simple::decrypt(endMsg, ciphertext, secret) );
+	assertEquals( "hello friendos", endMsg );
 }
-
-TEST_CASE( "simpleTest/testRoundtrip.BigFile", "[unit]" )
-{
-	MakeTempDirectory tempdir;
-
-	TestHelpers::generate_keypair(tempdir.path() / "test");
-
-	{
-		std::ofstream f(tempdir.path() / "bigfile");
-		const unsigned size = 10000000;
-		for (unsigned i = 0; i < size; i+=10)
-			f << "0123456789";
-	}
-
-	{
-		std::ofstream f(tempdir.path() / "encrypted_msg");
-		assertEquals( 0, mcleece::simple::encrypt(tempdir.path() / "test.pk", std::ifstream(tempdir.path() / "bigfile"), f) );
-	}
-
-	{
-		std::ofstream f(tempdir.path() / "decrypted");
-		assertEquals( 0, mcleece::simple::decrypt(tempdir.path() / "test.sk", "password", std::ifstream(tempdir.path() / "encrypted_msg"), f) );
-	}
-
-	string actual = get_hash(tempdir.path() / "decrypted");
-	assertEquals("d52fcc26b48dbd4d79b125eb0a29b803ade07613c67ac7c6f2751aefef008486", actual);
-}
-
-
