@@ -75,13 +75,10 @@ int main(int argc, char** argv)
 
 	int mode = result.count("simple")? mcleece_MODE_SIMPLE : mcleece_MODE_CRYPTO_BOX;
 
-	bool autokey = true;
 	string key_path = fmt::format("{}/{}", get_working_path(), "identity");
 	if (result.count("key-path"))
-	{
 		key_path = result["key-path"].as<string>();
-		autokey = false;
-	}
+
 	if (key_path.empty())
 		return help(options, "No key-path specified!");
 
@@ -98,10 +95,8 @@ int main(int argc, char** argv)
 
 	if (command == "encrypt")
 	{
-		if (autokey)
-			key_path += ".pk";
-		if (!exists(key_path))
-			return help(options, "key-path is not an accessible path!");
+		if (!exists(key_path + ".pk"))
+			return help(options, fmt::format("key-path {}.pk does not exist!", key_path));
 
 		string input = result["input"].as<string>();
 		if (input.empty())
@@ -118,10 +113,8 @@ int main(int argc, char** argv)
 
 	else if (command == "decrypt")
 	{
-		if (autokey)
-			key_path += ".sk";
-		if (!exists(key_path))
-			return help(options, "key-path is not an accessible path!");
+		if (!exists(key_path + ".sk"))
+			return help(options, fmt::format("key-path {}.sk does not exist!", key_path));
 
 		string input = result["input"].as<string>();
 		if (input.empty())
