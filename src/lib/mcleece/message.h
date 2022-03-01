@@ -110,7 +110,7 @@ namespace message {
 			return {};
 
 		mcleece::byte_view sbuff(data.data(), session_key::size());
-		auto session = mcleece::decode_session_key(sbuff, secret);
+		auto session = mcleece::keygen::decode_session_key(sbuff, secret);
 		nonce n(data.data() + session_key::size());
 		return {{session, n}};
 	}

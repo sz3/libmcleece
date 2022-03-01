@@ -20,12 +20,12 @@ namespace simple {
 
 	inline int keypair(mcleece::public_key_simple& pubk, mcleece::private_key_simple& secret)
 	{
-		return mcleece::generate_keypair(pubk, secret);
+		return mcleece::keygen::generate_keypair(pubk, secret);
 	}
 
 	inline int encrypt(mcleece::byte_view output_c, mcleece::byte_view message, const mcleece::public_key_simple& pubk)
 	{
-		mcleece::session_key session = mcleece::generate_session_key(pubk);
+		mcleece::session_key session = mcleece::keygen::generate_session_key(pubk);
 		mcleece::nonce n;
 
 		// store session data first

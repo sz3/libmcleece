@@ -34,7 +34,7 @@ TEST_CASE( "actionsTest/testSimpleDecrypt", "[unit]" )
 	TestHelpers::generate_keypair(tempdir.path() / "test");
 	mcleece::public_key pubk = mcleece::public_key_simple::from_file(tempdir.path() / "test.pk");
 
-	mcleece::session_key session = mcleece::generate_session_key(pubk);
+	mcleece::session_key session = mcleece::keygen::generate_session_key(pubk);
 	mcleece::nonce n;
 	std::string ciphertext = mcleece::message::encrypt("hello world", session, n);
 	std::string sessiontext = mcleece::message::encode_session(session, n);

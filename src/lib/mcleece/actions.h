@@ -3,7 +3,6 @@
 
 #include "cbox.h"
 #include "constants.h"
-#include "keygen.h"
 #include "simple.h"
 
 #include "serialize/format.h"
@@ -26,7 +25,7 @@ namespace actions {
 		private_key<MODE> secret;
 		int res;
 		if constexpr(MODE == SIMPLE)
-		    res = mcleece::generate_keypair(pubk, secret);
+		    res = mcleece::simple::keypair(pubk, secret);
 		else
 		    res = mcleece::cbox::crypto_box_keypair(pubk, secret);
 		if (res != 0)

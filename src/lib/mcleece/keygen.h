@@ -8,8 +8,9 @@
 
 #include "mceliece6960119f/crypto_kem.h"
 
-namespace mcleece
-{
+namespace mcleece {
+namespace keygen {
+
 	// pubk must be at least public_key::size()
 	// secret must be at least secret_key::size()
 	inline int generate_keypair(public_key_simple& pubk, private_key_simple& secret)
@@ -30,4 +31,4 @@ namespace mcleece
 		crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret.data());
 		return key;
 	}
-}
+}}
