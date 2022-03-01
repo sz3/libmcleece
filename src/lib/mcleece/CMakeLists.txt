@@ -28,8 +28,7 @@ target_link_libraries(mcleece_static
 	getline
 	keccak
 
-	crypto
-	sodium
+	${LIBSODIUM}
 	ssl
 )
 
