@@ -101,7 +101,6 @@ TEST_CASE( "actionsTest/testSimpleRoundtrip", "[unit]" )
 TEST_CASE( "actionsTest/testSimpleRoundtrip.BigFile", "[unit]" )
 {
 	MakeTempDirectory tempdir;
-
 	TestHelpers::generate_keypair(tempdir.path() / "test");
 
 	{
@@ -128,7 +127,7 @@ TEST_CASE( "actionsTest/testSimpleRoundtrip.BigFile", "[unit]" )
 TEST_CASE( "actionsTest/testCboxRoundtrip", "[unit]" )
 {
 	MakeTempDirectory tempdir;
-	assertEquals( 0, mcleece::actions::keypair_to_file(tempdir.path() / "cbox", "password", mcleece::CBOX) );
+	TestHelpers::generate_keypair(tempdir.path() / "cbox", mcleece::CBOX);
 
 	{
 		std::ofstream f(tempdir.path() / "helloworld");

@@ -19,14 +19,32 @@ namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
 
+	template <int MODE>
+	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)
+	{
+		public_key<MODE> pubk;
+		private_key<MODE> secret;
+		int res;
+		if constexpr(MODE == SIMPLE)
+		    res = mcleece::generate_keypair(pubk, secret);
+		else
+		    res = mcleece::cbox::crypto_box_keypair(pubk, secret);
+		if (res != 0)
+			return res;
+
+		pubk.save(pubk_path);
+		secret.save(secret_path, pw);
+		return res;
+	}
+
 	inline int keypair_to_file(std::string keypath, std::string pw, int mode)
 	{
 		std::string pk = fmt::format("{}.pk", keypath);
 		std::string sk = fmt::format("{}.sk", keypath);
 		if (mode == SIMPLE)
-			return mcleece::generate_keypair<SIMPLE>(pk, sk, pw);
+			return generate_keypair<SIMPLE>(pk, sk, pw);
 		else // mode == CBOX
-			return mcleece::generate_keypair<CBOX>(pk, sk, pw);
+			return generate_keypair<CBOX>(pk, sk, pw);
 	}
 
 	template <int MODE, typename INSTREAM, typename OUTSTREAM>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mcleece/simple.h"
+#include "mcleece/actions.h"
 #include "serialize/format.h"
 #include "util/File.h"
 #include <experimental/filesystem>
@@ -8,7 +8,7 @@
 
 namespace TestHelpers
 {
-	inline bool generate_keypair(std::experimental::filesystem::path target_prefix)
+	inline bool generate_keypair(std::experimental::filesystem::path target_prefix, int mode=mcleece::SIMPLE)
 	{
 		std::string basename = std::experimental::filesystem::path(target_prefix).filename();
 		std::string pk = fmt::format("/tmp/{}.pk", basename);
@@ -20,7 +20,7 @@ namespace TestHelpers
 			return false;
 		}
 		else
-			mcleece::simple::keypair_to_file(target_prefix, "password", mcleece::SIMPLE);
+			mcleece::actions::keypair_to_file(target_prefix, "password", mode);
 		return true;
 	}
 }

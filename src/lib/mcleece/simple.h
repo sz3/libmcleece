@@ -23,16 +23,6 @@ namespace simple {
 		return mcleece::generate_keypair(pubk, secret);
 	}
 
-	inline int keypair_to_file(std::string keypath, std::string pw, int mode)
-	{
-		std::string pk = fmt::format("{}.pk", keypath);
-		std::string sk = fmt::format("{}.sk", keypath);
-		if (mode == SIMPLE)
-			return mcleece::generate_keypair<SIMPLE>(pk, sk, pw);
-		else // mode == CBOX
-			return mcleece::generate_keypair<CBOX>(pk, sk, pw);
-	}
-
 	inline int encrypt(mcleece::byte_view output_c, mcleece::byte_view message, const mcleece::public_key_simple& pubk)
 	{
 		mcleece::session_key session = mcleece::generate_session_key(pubk);

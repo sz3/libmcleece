@@ -17,20 +17,6 @@ namespace mcleece
 		return crypto_kem_keypair(pubk.data(), secret.data());
 	}
 
-	template <int MODE>
-	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)
-	{
-		public_key_simple pubk;
-		private_key_simple secret;
-		int res = generate_keypair(pubk, secret);
-		if (res != 0)
-			return res;
-
-		pubk.save(pubk_path);
-		secret.save(secret_path, pw);
-		return res;
-	}
-
 	inline session_key generate_session_key(const public_key_simple& pubk)
 	{
 		session_key key;

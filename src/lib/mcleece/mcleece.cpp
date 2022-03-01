@@ -33,7 +33,7 @@ int mcleece_simple_keypair(unsigned char* pubk, unsigned char* secret)
 
 int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode)
 {
-	return mcleece::simple::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length), mode);
+	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length), mode);
 }
 
 int mcleece_crypto_box_keypair(unsigned char* pubk, unsigned char* secret)
