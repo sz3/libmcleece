@@ -29,8 +29,8 @@ namespace actions {
 			return mcleece::generate_keypair<CBOX>(pk, sk, pw);
 	}
 
-	template <typename INSTREAM, typename OUTSTREAM>
-	int encrypt(const public_key_simple& pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	template <int MODE, typename INSTREAM, typename OUTSTREAM>
+	int encrypt(const public_key<MODE>& pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
@@ -39,7 +39,7 @@ namespace actions {
 		std::string data;
 		data.resize(max_length);
 
-		const int header_length = mcleece::simple::MESSAGE_HEADER_SIZE;
+		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
 
 		std::string scratch;
 		scratch.resize(max_length + header_length);
@@ -54,7 +54,11 @@ namespace actions {
 			mcleece::byte_view buff(data.data(), last_read);
 			mcleece::byte_view out(scratch);
 
-			int res = mcleece::simple::encrypt(out, buff, pubk);
+			int res;
+			if constexpr(MODE == SIMPLE)
+			    res = mcleece::simple::encrypt(out, buff, pubk);
+			else
+			    res = mcleece::cbox::crypto_box_seal(out, buff, pubk);
 			if (res)
 				return res;
 
@@ -62,12 +66,6 @@ namespace actions {
 			os << ciphertext;
 		}
 		return 0;
-	}
-
-	template <typename INSTREAM, typename OUTSTREAM>
-	int encrypt(const public_key_cbox& pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
-	{
-		return 1;
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
@@ -86,14 +84,14 @@ namespace actions {
 		}
 	}
 
-	template <typename INSTREAM, typename OUTSTREAM>
-	int decrypt(const private_key_simple& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	template <int MODE, typename INSTREAM, typename OUTSTREAM>
+	int decrypt(const public_key<MODE>& pubk, const private_key<MODE>& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
 
 		std::string data;
-		const int header_length = mcleece::simple::MESSAGE_HEADER_SIZE;
+		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
 		data.resize(max_length + header_length);
 
 		std::string message;
@@ -111,7 +109,11 @@ namespace actions {
 			mcleece::byte_view out(message);
 
 			// decrypt the message
-			int res = mcleece::simple::decrypt(out, buff, secret);
+			int res;
+			if constexpr(MODE == SIMPLE)
+			    res = mcleece::simple::decrypt(out, buff, secret);
+			else
+			    res = mcleece::cbox::crypto_box_seal_open(out, buff, pubk, secret);
 			if (res)
 				return res;
 
@@ -122,9 +124,9 @@ namespace actions {
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int decrypt(const public_key_cbox& pubk, const private_key_cbox& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	int decrypt(const private_key_simple& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		return 1;
+		return decrypt(public_key_simple(nullptr), secret, is, os, max_length);
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>

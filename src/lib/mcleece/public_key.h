@@ -44,6 +44,11 @@ public:
 		return pk;
 	}
 
+	bool good() const
+	{
+		return _view.size() != 0 or _data.size() != 0;
+	}
+
 	unsigned char* data()
 	{
 		if (_view.size())

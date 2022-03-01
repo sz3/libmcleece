@@ -45,7 +45,7 @@ namespace cbox {
 		mcleece::public_key_simple pk(pubk.data() + crypto_box_PUBLICKEYBYTES);
 		res = mcleece::simple::encrypt(output_c, mcleece::byte_view(scratch), pk);
 		if (res != 0)
-			return 69 + res;
+			return 6 + res;
 
 		return 0;
 	}
@@ -62,7 +62,7 @@ namespace cbox {
 		mcleece::private_key_simple sk(secret.data() + crypto_box_SECRETKEYBYTES);
 		int res = mcleece::simple::decrypt(sb, ciphertext, sk);
 		if (res != 0)
-			return 69 + res;
+			return 6 + res;
 
 		res = ::crypto_box_seal_open(const_cast<unsigned char*>(output_m.data()), reinterpret_cast<unsigned char*>(scratch.data()), scratch.size(), pubk.data(), secret.data());
 		if (res != 0)
