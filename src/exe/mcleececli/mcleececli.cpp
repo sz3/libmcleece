@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 	if (result.count("help") or !result.count("command"))
 		return help(options);
 
-	bool simple = result.count("simple");
+	int mode = result.count("simple")? mcleece_MODE_SIMPLE : mcleece_MODE_CRYPTO_BOX;
 
 	bool autokey = true;
 	string key_path = fmt::format("{}/{}", get_working_path(), "identity");
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 			return help(options, "key-path is not a writable prefix!");
 
 		string pw = get_pw();
-		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size(), simple);
+		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size(), mode);
 	}
 
 	if (command == "encrypt")
@@ -110,12 +110,10 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 
 		string output = result["output"].as<string>();
-		int flags = 0;
-
 		if (output.empty())
-			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), flags);
+			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), mode);
 		else
-			return mcleece_encrypt_file(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_encrypt_file(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), mode);
 	}
 
 	else if (command == "decrypt")
@@ -133,12 +131,10 @@ int main(int argc, char** argv)
 
 		string pw = get_pw();
 		string output = result["output"].as<string>();
-		int flags = 0;
-
 		if (output.empty())
-			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
+			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), mode);
 		else
-			return mcleece_decrypt_file(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_decrypt_file(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), mode);
 	}
 
 	else

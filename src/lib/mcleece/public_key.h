@@ -67,8 +67,10 @@ public:
 
 	bool save(const std::string& filename) const
 	{
+		if (!good())
+			return false;
 		std::ofstream f(filename, std::ios::binary);
-		f.write(reinterpret_cast<const char*>(_data.data()), _data.size());
+		f.write(reinterpret_cast<const char*>(data()), size());
 		return true;
 	}
 

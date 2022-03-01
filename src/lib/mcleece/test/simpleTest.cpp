@@ -16,15 +16,6 @@
 using std::string;
 using namespace std;
 
-namespace {
-	std::string get_hash(std::string filename)
-	{
-		std::ifstream f(filename, std::ios::binary);
-		std::vector<unsigned char> hash(picosha2::k_digest_size);
-		picosha2::hash256(f, hash.begin(), hash.end());
-		return picosha2::bytes_to_hex_string(hash);
-	}
-}
 
 TEST_CASE( "simpleTest/testDecrypt", "[unit]" )
 {

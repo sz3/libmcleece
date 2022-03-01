@@ -31,11 +31,6 @@ int mcleece_simple_keypair(unsigned char* pubk, unsigned char* secret)
 	return mcleece::simple::keypair(pk, sk);
 }
 
-int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode)
-{
-	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length), mode);
-}
-
 int mcleece_crypto_box_keypair(unsigned char* pubk, unsigned char* secret)
 {
 	mcleece::public_key_cbox pk(pubk);
@@ -91,6 +86,11 @@ int mcleece_inplace_crypto_box_seal_open(unsigned char* buff, unsigned ciphertex
 	mcleece::public_key_cbox rpk(recipient_pubk);
 	mcleece::private_key_cbox rsk(recipient_secret);
 	return mcleece::cbox::inplace_crypto_box_seal_open(inout, scr, rpk, rsk);
+}
+
+int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode)
+{
+	return mcleece::actions::keypair_to_file(string(keypath, keypath_len), string(pw, pw_length), mode);
 }
 
 int mcleece_encrypt_file(char* keypath, unsigned keypath_len, char* srcpath, unsigned srcpath_len, char* dstpath, unsigned dstpath_len, int mode)
