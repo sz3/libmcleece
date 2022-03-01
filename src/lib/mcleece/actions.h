@@ -25,9 +25,9 @@ namespace actions {
 		private_key<MODE> secret;
 		int res;
 		if constexpr(MODE == SIMPLE)
-		    res = mcleece::simple::keypair(pubk, secret);
+			res = mcleece::simple::keypair(pubk, secret);
 		else
-		    res = mcleece::cbox::crypto_box_keypair(pubk, secret);
+			res = mcleece::cbox::crypto_box_keypair(pubk, secret);
 		if (res != 0)
 			return res;
 
@@ -58,8 +58,8 @@ namespace actions {
 
 		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
 
-		std::string scratch;
-		scratch.resize(max_length + header_length);
+		std::string outbuff;
+		outbuff.resize(max_length + header_length);
 
 		while (is)
 		{
@@ -68,18 +68,17 @@ namespace actions {
 			if (last_read == 0)
 				break;
 
-			mcleece::byte_view buff(data.data(), last_read);
-			mcleece::byte_view out(scratch);
+			mcleece::byte_view inview(data.data(), last_read);
 
 			int res;
 			if constexpr(MODE == SIMPLE)
-			    res = mcleece::simple::encrypt(out, buff, pubk);
+				res = mcleece::simple::encrypt(outbuff, inview, pubk);
 			else
-			    res = mcleece::cbox::crypto_box_seal(out, buff, pubk);
+				res = mcleece::cbox::crypto_box_seal(outbuff, inview, pubk);
 			if (res)
 				return res;
 
-			std::string_view ciphertext = {scratch.data(), last_read + header_length};
+			std::string_view ciphertext = {outbuff.data(), last_read + header_length};
 			os << ciphertext;
 		}
 		return 0;
@@ -122,15 +121,14 @@ namespace actions {
 			if (last_read == 0)
 				break;
 
-			mcleece::byte_view buff(data.data(), last_read);
-			mcleece::byte_view out(message);
+			mcleece::byte_view inview(data.data(), last_read);
 
 			// decrypt the message
 			int res;
 			if constexpr(MODE == SIMPLE)
-			    res = mcleece::simple::decrypt(out, buff, secret);
+				res = mcleece::simple::decrypt(message, inview, secret);
 			else
-			    res = mcleece::cbox::crypto_box_seal_open(out, buff, pubk, secret);
+				res = mcleece::cbox::crypto_box_seal_open(message, inview, pubk, secret);
 			if (res)
 				return res;
 

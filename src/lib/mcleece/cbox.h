@@ -29,7 +29,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int crypto_box_seal(mcleece::byte_view& output_c, const mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
+	inline int crypto_box_seal(mcleece::byte_view output_c, const mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
 	{
 		if (output_c.size() < message.size() + FULL_MESSAGE_HEADER_SIZE)
 			return 65;
@@ -50,7 +50,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int crypto_box_seal_open(mcleece::byte_view& output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
+	inline int crypto_box_seal_open(mcleece::byte_view output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
 	{
 		if (ciphertext.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;
@@ -72,7 +72,7 @@ namespace cbox {
 	}
 
 	// `message` should be plaintext sized to len(message) + MESSAGE_HEADER_SIZE
-	inline int inplace_crypto_box_seal(mcleece::byte_view& message, mcleece::byte_view& scratch, const mcleece::public_key_cbox& pubk)
+	inline int inplace_crypto_box_seal(mcleece::byte_view message, mcleece::byte_view scratch, const mcleece::public_key_cbox& pubk)
 	{
 		// message contains the data going on, and will be overwritten with the final ciphertext.
 		// scratch will hold the intermediate representation -- a normal libsodium crypto_box_seal result
@@ -96,7 +96,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int inplace_crypto_box_seal_open(mcleece::byte_view& message, mcleece::byte_view& scratch, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
+	inline int inplace_crypto_box_seal_open(mcleece::byte_view message, mcleece::byte_view scratch, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
 	{
 		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;
