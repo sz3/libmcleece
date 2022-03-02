@@ -52,33 +52,47 @@ namespace actions {
 		if (!is)
 			return 66;
 
-		// encrypt each chunk
-		std::string data;
-		data.resize(max_length);
-
 		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
 
-		std::string outbuff;
-		outbuff.resize(max_length + header_length);
+		std::string data;
+		std::string scratch;
+		if constexpr(MODE == SIMPLE)
+		{
+			data.resize(max_length);
+			scratch.resize(max_length + header_length);
+		}
+		else
+		{
+			data.resize(max_length + header_length);
+			scratch.resize(max_length + mcleece::cbox::INNER_MESSAGE_HEADER_SIZE);
+		}
 
+		// encrypt each chunk
 		while (is)
 		{
-			is.read(data.data(), data.size());
+			is.read(data.data(), max_length);
 			size_t last_read = is.gcount();
 			if (last_read == 0)
 				break;
 
-			mcleece::byte_view inview(data.data(), last_read);
-
 			int res;
+			std::string_view ciphertext;
+
 			if constexpr(MODE == SIMPLE)
-				res = mcleece::simple::encrypt(outbuff, inview, pubk);
+			{
+				mcleece::byte_view dataview(data.data(), last_read);
+				res = mcleece::simple::encrypt(scratch, dataview, pubk);
+				ciphertext = {scratch.data(), last_read + header_length};
+			}
 			else
-				res = mcleece::cbox::crypto_box_seal(outbuff, inview, pubk);
+			{
+				mcleece::byte_view dataview(data.data(), last_read + header_length);
+				mcleece::byte_view intermediate(scratch.data(), last_read + mcleece::cbox::INNER_MESSAGE_HEADER_SIZE);
+				res = mcleece::cbox::inplace_crypto_box_seal(dataview, intermediate, pubk);
+				ciphertext = {data.data(), last_read + header_length};
+			}
 			if (res)
 				return res;
-
-			std::string_view ciphertext = {outbuff.data(), last_read + header_length};
 			os << ciphertext;
 		}
 		return 0;
@@ -106,12 +120,16 @@ namespace actions {
 		if (!is)
 			return 66;
 
-		std::string data;
 		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
-		data.resize(max_length + header_length);
 
-		std::string message;
-		message.resize(max_length);
+		std::string data;
+		std::string scratch;
+
+		data.resize(max_length + header_length);
+		if constexpr(MODE == SIMPLE)
+			scratch.resize(max_length);
+		else
+			scratch.resize(max_length + mcleece::cbox::INNER_MESSAGE_HEADER_SIZE);
 
 		// extract the message bytes
 		while (is)
@@ -121,18 +139,24 @@ namespace actions {
 			if (last_read == 0)
 				break;
 
-			mcleece::byte_view inview(data.data(), last_read);
-
 			// decrypt the message
 			int res;
+			std::string_view plaintext;
+			mcleece::byte_view dataview(data.data(), last_read);
+
 			if constexpr(MODE == SIMPLE)
-				res = mcleece::simple::decrypt(message, inview, secret);
+			{
+				res = mcleece::simple::decrypt(scratch, dataview, secret);
+				plaintext = {scratch.data(), last_read - header_length};
+			}
 			else
-				res = mcleece::cbox::crypto_box_seal_open(message, inview, pubk, secret);
+			{
+				mcleece::byte_view intermediate(scratch.data(), last_read - mcleece::simple::MESSAGE_HEADER_SIZE);
+				res = mcleece::cbox::inplace_crypto_box_seal_open(dataview, intermediate, pubk, secret);
+				plaintext = {data.data(), last_read - header_length};
+			}
 			if (res)
 				return res;
-
-			std::string_view plaintext = {message.data(), last_read - header_length};
 			os << plaintext;
 		}
 		return 0;

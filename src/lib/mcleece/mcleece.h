@@ -12,6 +12,7 @@ extern const unsigned mcleece_simple_MESSAGE_HEADER_SIZE;
 
 extern const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE;
 extern const unsigned mcleece_crypto_box_SECRET_KEY_SIZE;
+extern const unsigned mcleece_crypto_box_INNER_MESSAGE_HEADER_SIZE;
 extern const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE;
 
 extern const int mcleece_MODE_SIMPLE;

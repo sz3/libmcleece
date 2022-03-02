@@ -14,7 +14,8 @@ namespace cbox {
 
 	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key_cbox::size();
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key_cbox::size();
-	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEADER_SIZE + crypto_box_SEALBYTES;
+	static const unsigned INNER_MESSAGE_HEADER_SIZE = crypto_box_SEALBYTES;
+	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEADER_SIZE + INNER_MESSAGE_HEADER_SIZE;
 
 	inline int crypto_box_keypair(public_key_cbox& pubk, private_key_cbox& secret)
 	{
@@ -91,7 +92,7 @@ namespace cbox {
 		mcleece::public_key_simple pk(pubk.data() + crypto_box_PUBLICKEYBYTES);
 		res = mcleece::simple::encrypt(ciphertext, scratch, pk);
 		if (res != 0)
-			return 69 + res;
+			return 6 + res;
 
 		return 0;
 	}
@@ -106,7 +107,7 @@ namespace cbox {
 		mcleece::private_key_simple sk(secret.data() + crypto_box_SECRETKEYBYTES);
 		int res = mcleece::simple::decrypt(scratch, message, sk);
 		if (res != 0)
-			return 69 + res;
+			return 6 + res;
 
 		res = ::crypto_box_seal_open(const_cast<unsigned char*>(message.data()), scratch.data(), scratch.size(), pubk.data(), secret.data());
 		if (res != 0)
