@@ -64,7 +64,7 @@ namespace actions {
 		else
 		{
 			data.resize(max_length + header_length);
-			scratch.resize(max_length + mcleece::cbox::INNER_MESSAGE_HEADER_SIZE);
+			scratch.resize(max_length + mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE);
 		}
 
 		// encrypt each chunk
@@ -87,7 +87,7 @@ namespace actions {
 			else
 			{
 				mcleece::byte_view dataview(data.data(), last_read + header_length);
-				mcleece::byte_view intermediate(scratch.data(), last_read + mcleece::cbox::INNER_MESSAGE_HEADER_SIZE);
+				mcleece::byte_view intermediate(scratch.data(), last_read + mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE);
 				res = mcleece::cbox::inplace_crypto_box_seal(dataview, intermediate, pubk);
 				ciphertext = {data.data(), last_read + header_length};
 			}
@@ -115,7 +115,7 @@ namespace actions {
 	}
 
 	template <int MODE, typename INSTREAM, typename OUTSTREAM>
-	int decrypt(const public_key<MODE>& pubk, const private_key<MODE>& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	int decrypt(const public_key_sodium& pubk, const private_key<MODE>& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
@@ -129,7 +129,7 @@ namespace actions {
 		if constexpr(MODE == SIMPLE)
 			scratch.resize(max_length);
 		else
-			scratch.resize(max_length + mcleece::cbox::INNER_MESSAGE_HEADER_SIZE);
+			scratch.resize(max_length + mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE);
 
 		// extract the message bytes
 		while (is)
@@ -165,7 +165,7 @@ namespace actions {
 	template <typename INSTREAM, typename OUTSTREAM>
 	int decrypt(const private_key_simple& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		return decrypt(public_key_simple(nullptr), secret, is, os, max_length);
+		return decrypt(public_key_sodium(nullptr), secret, is, os, max_length);
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
@@ -181,7 +181,7 @@ namespace actions {
 		else // mode == CBOX
 		{
 			mcleece::private_key secret = mcleece::private_key_cbox::from_file(sk, pw);
-			mcleece::public_key pubk = mcleece::public_key_cbox::from_file(pk);
+			mcleece::public_key pubk = mcleece::public_key_sodium::from_file(pk);
 			return decrypt(pubk, secret, is, os, max_length);
 		}
 	}

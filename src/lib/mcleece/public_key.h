@@ -22,6 +22,8 @@ public:
 	{
 		if (MODE == SIMPLE)
 			return SIMPLE_PUBLIC_KEY_SIZE;
+		else if (MODE == SODIUM)
+			return SODIUM_PUBLIC_KEY_SIZE;
 		else
 			return CBOX_PUBLIC_KEY_SIZE;
 	}
@@ -88,5 +90,6 @@ protected:
 
 using public_key_simple = public_key<SIMPLE>;
 using public_key_cbox = public_key<CBOX>;
+using public_key_sodium = public_key<SODIUM>;
 
 }

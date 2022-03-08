@@ -8,10 +8,11 @@ namespace mcleece {
 
 static constexpr int SIMPLE = 0;
 static constexpr int CBOX = 1;
+static constexpr int SODIUM = 2;
 
-// probably hide this in a special class?
 static constexpr unsigned SIMPLE_PUBLIC_KEY_SIZE = crypto_kem_PUBLICKEYBYTES;
-static constexpr unsigned CBOX_PUBLIC_KEY_SIZE = SIMPLE_PUBLIC_KEY_SIZE + crypto_box_PUBLICKEYBYTES;
+static constexpr unsigned SODIUM_PUBLIC_KEY_SIZE = crypto_box_PUBLICKEYBYTES;
+static constexpr unsigned CBOX_PUBLIC_KEY_SIZE = SIMPLE_PUBLIC_KEY_SIZE + SODIUM_PUBLIC_KEY_SIZE;
 
 static constexpr unsigned SIMPLE_SECRET_KEY_SIZE = crypto_kem_SECRETKEYBYTES;
 static constexpr unsigned CBOX_SECRET_KEY_SIZE = SIMPLE_SECRET_KEY_SIZE + crypto_box_SECRETKEYBYTES;

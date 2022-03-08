@@ -13,9 +13,10 @@ namespace mcleece {
 namespace cbox {
 
 	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key_cbox::size();
+	static const unsigned SODIUM_PUBLIC_KEY_SIZE = mcleece::public_key_sodium::size();
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key_cbox::size();
-	static const unsigned INNER_MESSAGE_HEADER_SIZE = crypto_box_SEALBYTES;
-	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEADER_SIZE + INNER_MESSAGE_HEADER_SIZE;
+	static const unsigned SODIUM_MESSAGE_HEADER_SIZE = crypto_box_SEALBYTES;
+	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEADER_SIZE + SODIUM_MESSAGE_HEADER_SIZE;
 
 	inline int crypto_box_keypair(public_key_cbox& pubk, private_key_cbox& secret)
 	{
@@ -51,7 +52,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int crypto_box_seal_open(mcleece::byte_view output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
+	inline int crypto_box_seal_open(mcleece::byte_view output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_sodium& pubk, const mcleece::private_key_cbox& secret)
 	{
 		if (ciphertext.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;
@@ -97,7 +98,7 @@ namespace cbox {
 		return 0;
 	}
 
-	inline int inplace_crypto_box_seal_open(mcleece::byte_view message, mcleece::byte_view scratch, const mcleece::public_key_cbox& pubk, const mcleece::private_key_cbox& secret)
+	inline int inplace_crypto_box_seal_open(mcleece::byte_view message, mcleece::byte_view scratch, const mcleece::public_key_sodium& pubk, const mcleece::private_key_cbox& secret)
 	{
 		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
 			return 65;

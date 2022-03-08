@@ -104,7 +104,7 @@ TEST_CASE( "cboxTest/testCrossValidation.1", "[unit]" )
 	}
 
 	std::vector<unsigned char> scratch;
-	scratch.resize(srcMessage.size() + mcleece_crypto_box_INNER_MESSAGE_HEADER_SIZE);
+	scratch.resize(srcMessage.size() + mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE);
 	{
 		int res = mcleece_inplace_crypto_box_seal_open(reinterpret_cast<unsigned char*>(cipherText.data()), cipherText.size(), scratch.data(), pubk.data(), secret.data());
 		assertEquals(0, res);
