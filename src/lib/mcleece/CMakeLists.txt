@@ -38,6 +38,9 @@ target_link_libraries(mcleece
 
 	getline
 	keccak
+
+	sodium
+	ssl
 )
 
 add_custom_command(
