@@ -8,54 +8,27 @@
 
 #include "mceliece6960119f/crypto_kem.h"
 
-namespace mcleece
-{
+namespace mcleece {
+namespace keygen {
+
 	// pubk must be at least public_key::size()
 	// secret must be at least secret_key::size()
-	inline int generate_keypair(unsigned char* pubk, unsigned char* secret)
+	inline int generate_keypair(public_key_simple& pubk, private_key_simple& secret)
 	{
-		return crypto_kem_keypair(pubk, secret);
+		return crypto_kem_keypair(pubk.data(), secret.data());
 	}
 
-	inline int generate_keypair(public_key& pubk, private_key& secret)
-	{
-		return generate_keypair(pubk.data(), secret.data());
-	}
-
-	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)
-	{
-		public_key pubk;
-		private_key secret;
-		int res = generate_keypair(pubk, secret);
-		if (res != 0)
-			return res;
-
-		pubk.save(pubk_path);
-		secret.save(secret_path, pw);
-		return res;
-	}
-
-	inline session_key generate_session_key(const unsigned char* pubk)
+	inline session_key generate_session_key(const public_key_simple& pubk)
 	{
 		session_key key;
-		crypto_kem_enc(key.encrypted_key_data(), key.key_data(), pubk);
+		crypto_kem_enc(key.encrypted_key_data(), key.key_data(), pubk.data());
 		return key;
 	}
 
-	inline session_key generate_session_key(const public_key& pubk)
-	{
-		return generate_session_key(pubk.data());
-	}
-
-	inline session_key decode_session_key(const mcleece::byte_view& encrypted_key, const unsigned char* secret)
+	inline session_key decode_session_key(const mcleece::byte_view& encrypted_key, const private_key_simple& secret)
 	{
 		session_key key(encrypted_key);
-		crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret);
+		crypto_kem_dec(key.key_data(), key.encrypted_key_data(), secret.data());
 		return key;
 	}
-
-	inline session_key decode_session_key(const mcleece::byte_view& encrypted_key, const private_key& secret)
-	{
-		return decode_session_key(encrypted_key, secret.data());
-	}
-}
+}}

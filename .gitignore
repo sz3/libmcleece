@@ -1,5 +1,6 @@
+.cmake/
 CMakeFiles/
-build/
+build*/
 dist/
 CMakeCache.txt
 Makefile

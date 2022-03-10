@@ -7,13 +7,15 @@ set(SOURCES
 	mcleece.h
 
 	actions.h
-	easy.h
+	cbox.h
+	constants.h
 	keygen.h
 	message.h
 	nonce.h
 	private_key.h
 	public_key.h
 	session_key.h
+	simple.h
 )
 
 add_library(mcleece_static STATIC ${SOURCES})
@@ -26,8 +28,7 @@ target_link_libraries(mcleece_static
 	getline
 	keccak
 
-	crypto
-	sodium
+	${LIBSODIUM}
 	ssl
 )
 
@@ -37,6 +38,9 @@ target_link_libraries(mcleece
 
 	getline
 	keccak
+
+	sodium
+	ssl
 )
 
 add_custom_command(

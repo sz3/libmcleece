@@ -38,7 +38,9 @@ jobs:
     - name: Setup tests
       working-directory: ${{runner.workspace}}/libmcleece
       shell: bash
-      run: (cd dist/bin/ && (echo "password" | ./mcleececli keypair --key-path=/tmp/test))
+      run: |
+         (cd dist/bin/ && (echo "password" | ./mcleececli keypair -s --key-path=/tmp/test))
+         (cd dist/bin/ && (echo "password" | ./mcleececli keypair --key-path=/tmp/cbox))
 
     - name: Test
       working-directory: ${{runner.workspace}}/build

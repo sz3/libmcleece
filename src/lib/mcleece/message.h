@@ -13,8 +13,9 @@
 #include <vector>
 #include <utility>
 
-namespace mcleece
-{
+namespace mcleece {
+namespace message {
+
 	inline int encrypt(mcleece::byte_view& ciphertext, const mcleece::byte_view& message, const session_key& session, const nonce& n)
 	{
 		if (session.key().size() < crypto_secretbox_keybytes())
@@ -103,19 +104,15 @@ namespace mcleece
 		return buff;
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const unsigned char* secret)
+	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const private_key_simple& secret)
 	{
 		if (data.size() < session_header_size())
 			return {};
 
 		mcleece::byte_view sbuff(data.data(), session_key::size());
-		auto session = mcleece::decode_session_key(sbuff, secret);
+		auto session = mcleece::keygen::decode_session_key(sbuff, secret);
 		nonce n(data.data() + session_key::size());
 		return {{session, n}};
 	}
 
-	inline std::optional<std::pair<session_key, nonce>> decode_session(mcleece::byte_view data, const private_key& secret)
-	{
-		return decode_session(data, secret.data());
-	}
-}
+}}

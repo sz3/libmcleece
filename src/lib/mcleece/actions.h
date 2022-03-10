@@ -1,8 +1,9 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "keygen.h"
-#include "message.h"
+#include "cbox.h"
+#include "constants.h"
+#include "simple.h"
 
 #include "serialize/format.h"
 #include "util/byte_view.h"
@@ -16,153 +17,172 @@
 namespace mcleece {
 namespace actions {
 	static const int MAX_MESSAGE_LENGTH = 0x100000;
-	static const unsigned MESSAGE_HEADER_SIZE = mcleece::session_header_size() + crypto_secretbox_macbytes();
 
-	inline int keypair(unsigned char* pubk, unsigned char* secret)
+	template <int MODE>
+	inline int generate_keypair(std::string pubk_path, std::string secret_path, std::string pw)
 	{
-		return mcleece::generate_keypair(pubk, secret);
-	}
-
-	inline int keypair_to_file(std::string keypath, std::string pw)
-	{
-		return mcleece::generate_keypair(fmt::format("{}.pk", keypath), fmt::format("{}.sk", keypath), pw);
-	}
-
-	inline int encrypt(mcleece::byte_view output_c, mcleece::byte_view message, const unsigned char* pubk)
-	{
-		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
-		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
-		mcleece::session_key session = mcleece::generate_session_key(pubk);
-		mcleece::nonce n;
-
-		// store session data first
-		if (!mcleece::encode_session(output_c, session, n))
-			return 66;
-		if (!output_c.size())
-			return 67;
-
-		// it's all in RAM -- single chunk encode
-		int res = mcleece::encrypt(output_c, message, session, n);
+		public_key<MODE> pubk;
+		private_key<MODE> secret;
+		int res;
+		if constexpr(MODE == SIMPLE)
+			res = mcleece::simple::keypair(pubk, secret);
+		else
+			res = mcleece::cbox::crypto_box_keypair(pubk, secret);
 		if (res != 0)
-			return 69 + res;
+			return res;
 
-		return 0;
+		pubk.save(pubk_path);
+		secret.save(secret_path, pw);
+		return res;
 	}
 
-	inline int decrypt(mcleece::byte_view output_m, mcleece::byte_view ciphertext, const unsigned char* secret)
+	inline int keypair_to_file(std::string keypath, std::string pw, int mode)
 	{
-		// extract the session from the front of the input
-		if (ciphertext.size() < mcleece::session_header_size())
-			return 65;
-		auto session_nonce = mcleece::decode_session(ciphertext, secret);
-		if (!session_nonce)
-			return 64;
-		if (!ciphertext.advance(mcleece::session_header_size()))
-			return 65;
-
-		mcleece::session_key& enc_session = session_nonce->first;
-		mcleece::nonce& enc_n = session_nonce->second;
-
-		// extract the message bytes
-		int res = mcleece::decrypt(output_m, ciphertext, enc_session, enc_n);
-		if (res != 0)
-			return 69 + res;
-
-		return 0;
+		std::string pk = fmt::format("{}.pk", keypath);
+		std::string sk = fmt::format("{}.sk", keypath);
+		if (mode == SIMPLE)
+			return generate_keypair<SIMPLE>(pk, sk, pw);
+		else // mode == CBOX
+			return generate_keypair<CBOX>(pk, sk, pw);
 	}
 
-	template <typename INSTREAM, typename OUTSTREAM>
-	int encrypt(const unsigned char* pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	template <int MODE, typename INSTREAM, typename OUTSTREAM>
+	int encrypt(const public_key<MODE>& pubk, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
 
-		// generate session key. nonce initiallized to a random value, and incremented by 1 for every message
-		// we only use multiple messages when the input is larger than the arbitrary MAX_LENGTH below
-		mcleece::session_key session = mcleece::generate_session_key(pubk);
-		mcleece::nonce n;
+		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
 
-		// store session data first
-		std::string sessiontext = mcleece::encode_session(session, n);
-		os << sessiontext;
-
-		// encrypt each chunk
 		std::string data;
-		while (is)
+		std::string scratch;
+		if constexpr(MODE == SIMPLE)
 		{
 			data.resize(max_length);
-			is.read(data.data(), data.size());
+			scratch.resize(max_length + header_length);
+		}
+		else
+		{
+			data.resize(max_length + header_length);
+			scratch.resize(max_length + mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE);
+		}
+
+		// encrypt each chunk
+		while (is)
+		{
+			is.read(data.data(), max_length);
 			size_t last_read = is.gcount();
+			if (last_read == 0)
+				break;
 
-			if (last_read < data.size())
-				data.resize(last_read);
+			int res;
+			std::string_view ciphertext;
 
-			std::string ciphertext = mcleece::encrypt(data, session, n);
-			if (ciphertext.empty())
-				return 70;
+			if constexpr(MODE == SIMPLE)
+			{
+				mcleece::byte_view dataview(data.data(), last_read);
+				res = mcleece::simple::encrypt(scratch, dataview, pubk);
+				ciphertext = {scratch.data(), last_read + header_length};
+			}
+			else
+			{
+				mcleece::byte_view dataview(data.data(), last_read + header_length);
+				mcleece::byte_view intermediate(scratch.data(), last_read + mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE);
+				res = mcleece::cbox::inplace_crypto_box_seal(dataview, intermediate, pubk);
+				ciphertext = {data.data(), last_read + header_length};
+			}
+			if (res)
+				return res;
 			os << ciphertext;
-
-			++n;
 		}
 		return 0;
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	int encrypt(std::string keypath, INSTREAM&& is, OUTSTREAM& os, int mode, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		mcleece::public_key pubk = mcleece::public_key::from_file(keypath);
-		return encrypt(pubk.data(), is, os, max_length);
+		std::string pk = fmt::format("{}.pk", keypath);
+		if (mode == SIMPLE)
+		{
+			mcleece::public_key pubk = mcleece::public_key_simple::from_file(pk);
+			return encrypt(pubk, is, os, max_length);
+		}
+		else // mode == CBOX
+		{
+			mcleece::public_key pubk = mcleece::public_key_cbox::from_file(pk);
+			return encrypt(pubk, is, os, max_length);
+		}
 	}
 
-	template <typename INSTREAM, typename OUTSTREAM>
-	int decrypt(const unsigned char* secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	template <int MODE, typename INSTREAM, typename OUTSTREAM>
+	int decrypt(const public_key_sodium& pubk, const private_key<MODE>& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
 		if (!is)
 			return 66;
 
+		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
+
 		std::string data;
-		size_t last_read;
+		std::string scratch;
 
-		// extract the session from the front of the input
-		data.resize(mcleece::session_header_size());
-		is.read(data.data(), data.size());
-		last_read = is.gcount();
-
-		if (!is or last_read < data.size())
-			return 65;
-		auto session_nonce = mcleece::decode_session(data, secret);
-		if (!session_nonce)
-			return 64;
-
-		mcleece::session_key& enc_session = session_nonce->first;
-		mcleece::nonce& enc_n = session_nonce->second;
+		data.resize(max_length + header_length);
+		if constexpr(MODE == SIMPLE)
+			scratch.resize(max_length);
+		else
+			scratch.resize(max_length + mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE);
 
 		// extract the message bytes
-		const int MAX_CIPHERTEXT_LENGTH = max_length + crypto_secretbox_macbytes();
 		while (is)
 		{
-			data.resize(MAX_CIPHERTEXT_LENGTH);
 			is.read(data.data(), data.size());
-			last_read = is.gcount();
-
-			if (last_read < data.size())
-				data.resize(last_read);
+			size_t last_read = is.gcount();
+			if (last_read == 0)
+				break;
 
 			// decrypt the message
-			std::string message = mcleece::decrypt(data, enc_session, enc_n);
-			if (message.empty())
-				return 70;
-			os << message;
+			int res;
+			std::string_view plaintext;
+			mcleece::byte_view dataview(data.data(), last_read);
 
-			++enc_n;
+			if constexpr(MODE == SIMPLE)
+			{
+				res = mcleece::simple::decrypt(scratch, dataview, secret);
+				plaintext = {scratch.data(), last_read - header_length};
+			}
+			else
+			{
+				mcleece::byte_view intermediate(scratch.data(), last_read - mcleece::simple::MESSAGE_HEADER_SIZE);
+				res = mcleece::cbox::inplace_crypto_box_seal_open(dataview, intermediate, pubk, secret);
+				plaintext = {data.data(), last_read - header_length};
+			}
+			if (res)
+				return res;
+			os << plaintext;
 		}
 		return 0;
 	}
 
 	template <typename INSTREAM, typename OUTSTREAM>
-	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
+	int decrypt(const private_key_simple& secret, INSTREAM&& is, OUTSTREAM& os, unsigned max_length=MAX_MESSAGE_LENGTH)
 	{
-		mcleece::private_key secret = mcleece::private_key::from_file(keypath, pw);
-		return decrypt(secret.data(), is, os, max_length);
+		return decrypt(public_key_sodium(nullptr), secret, is, os, max_length);
+	}
+
+	template <typename INSTREAM, typename OUTSTREAM>
+	int decrypt(std::string keypath, std::string pw, INSTREAM&& is, OUTSTREAM& os, int mode, unsigned max_length=MAX_MESSAGE_LENGTH)
+	{
+		std::string pk = fmt::format("{}.pk", keypath);
+		std::string sk = fmt::format("{}.sk", keypath);
+		if (mode == SIMPLE)
+		{
+			mcleece::private_key secret = mcleece::private_key_simple::from_file(sk, pw);
+			return decrypt(secret, is, os, max_length);
+		}
+		else // mode == CBOX
+		{
+			mcleece::private_key secret = mcleece::private_key_cbox::from_file(sk, pw);
+			mcleece::public_key pubk = mcleece::public_key_sodium::from_file(pk);
+			return decrypt(pubk, secret, is, os, max_length);
+		}
 	}
 }}

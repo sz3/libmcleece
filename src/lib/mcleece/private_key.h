@@ -1,9 +1,11 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece6960119f/crypto_kem.h"
+#include "constants.h"
+#include "util/byte_view.h"
 #include "util/File.h"
 
+#include "mceliece6960119f/crypto_kem.h"
 #include "sodium/crypto_pwhash_scryptsalsa208sha256.h"
 #include "sodium/randombytes.h"
 #include <array>
@@ -12,11 +14,20 @@
 
 namespace mcleece {
 
+template <int MODE>
 class private_key
 {
+public:
+	static constexpr unsigned size()
+	{
+		if (MODE == SIMPLE)
+			return SIMPLE_SECRET_KEY_SIZE;
+		else
+			return CBOX_SECRET_KEY_SIZE;
+	}
+
 protected:
-	static const int SIZE = crypto_kem_SECRETKEYBYTES;
-	using DATA_ARRAY = std::array<unsigned char, SIZE>;
+	using DATA_ARRAY = std::array<unsigned char, size()>;
 	using SALT_ARRAY = std::array<unsigned char, crypto_pwhash_scryptsalsa208sha256_SALTBYTES>;
 
 protected:
@@ -27,20 +38,15 @@ protected:
 		                                          crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE) == 0;
 	}
 
-public:
-	static constexpr unsigned size()
-	{
-		return SIZE;
-	}
 
 public:
 	private_key()
+	    : _view(static_cast<unsigned char*>(nullptr), 0)
 	{}
 
-	private_key(const unsigned char* buff)
-	{
-		std::copy(buff, buff+_data.size(), &_data[0]);
-	}
+	explicit private_key(const unsigned char* buff)
+	    : _view(buff, size())
+	{}
 
 	static private_key from_file(std::string filename, std::string pw)
 	{
@@ -57,12 +63,18 @@ public:
 
 	unsigned char* data()
 	{
-		return _data.data();
+		if (_view.size())
+			return const_cast<unsigned char*>(_view.data());
+		else
+			return _data.data();
 	}
 
 	const unsigned char* data() const
 	{
-		return _data.data();
+		if (_view.size())
+			return _view.data();
+		else
+			return _data.data();
 	}
 
 	bool save(const std::string& filename, const std::string& pw) const
@@ -109,8 +121,12 @@ public:
 	}
 
 protected:
+	const mcleece::byte_view _view;
 	DATA_ARRAY _data;
 	bool _good = true;
 };
+
+using private_key_simple = private_key<SIMPLE>;
+using private_key_cbox = private_key<CBOX>;
 
 }

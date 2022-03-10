@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 	    ("k,key-path", "Path to key or keypair (default: {cwd}/identity)", cxxopts::value<string>())
 	    ("i,input", "Input file. Required for [encrypt|decrypt]", cxxopts::value<string>()->default_value(""))
 	    ("o,output", "Output file. No value -> stdout.", cxxopts::value<string>()->default_value(""))
+	    ("s,simple", "Simple mceliece mode. Don't use x25519 cryptobox layer.", cxxopts::value<bool>())
 	    ("h,help", "Print usage")
 	;
 	options.parse_positional({"command", "input", "output"});
@@ -72,13 +73,12 @@ int main(int argc, char** argv)
 	if (result.count("help") or !result.count("command"))
 		return help(options);
 
-	bool autokey = true;
+	int mode = result.count("simple")? mcleece_MODE_SIMPLE : mcleece_MODE_CRYPTO_BOX;
+
 	string key_path = fmt::format("{}/{}", get_working_path(), "identity");
 	if (result.count("key-path"))
-	{
 		key_path = result["key-path"].as<string>();
-		autokey = false;
-	}
+
 	if (key_path.empty())
 		return help(options, "No key-path specified!");
 
@@ -90,15 +90,13 @@ int main(int argc, char** argv)
 			return help(options, "key-path is not a writable prefix!");
 
 		string pw = get_pw();
-		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size());
+		return mcleece_keypair_to_file(key_path.data(), key_path.size(), pw.data(), pw.size(), mode);
 	}
 
 	if (command == "encrypt")
 	{
-		if (autokey)
-			key_path += ".pk";
-		if (!exists(key_path))
-			return help(options, "key-path is not an accessible path!");
+		if (!exists(key_path + ".pk"))
+			return help(options, fmt::format("key-path {}.pk does not exist!", key_path));
 
 		string input = result["input"].as<string>();
 		if (input.empty())
@@ -107,20 +105,16 @@ int main(int argc, char** argv)
 			return help(options, "Please specify an input file that exists!");
 
 		string output = result["output"].as<string>();
-		int flags = 0;
-
 		if (output.empty())
-			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), flags);
+			return mcleece_encrypt_stdout(key_path.data(), key_path.size(), input.data(), input.size(), mode);
 		else
-			return mcleece_encrypt_file(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_encrypt_file(key_path.data(), key_path.size(), input.data(), input.size(), output.data(), output.size(), mode);
 	}
 
 	else if (command == "decrypt")
 	{
-		if (autokey)
-			key_path += ".sk";
-		if (!exists(key_path))
-			return help(options, "key-path is not an accessible path!");
+		if (!exists(key_path + ".sk"))
+			return help(options, fmt::format("key-path {}.sk does not exist!", key_path));
 
 		string input = result["input"].as<string>();
 		if (input.empty())
@@ -130,12 +124,10 @@ int main(int argc, char** argv)
 
 		string pw = get_pw();
 		string output = result["output"].as<string>();
-		int flags = 0;
-
 		if (output.empty())
-			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), flags);
+			return mcleece_decrypt_stdout(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), mode);
 		else
-			return mcleece_decrypt_file(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), flags);
+			return mcleece_decrypt_file(key_path.data(), key_path.size(), pw.data(), pw.size(), input.data(), input.size(), output.data(), output.size(), mode);
 	}
 
 	else

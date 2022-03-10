@@ -1,7 +1,9 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece6960119f/crypto_kem.h"
+#include "constants.h"
+#include "util/byte_view.h"
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -12,23 +14,29 @@
 
 namespace mcleece {
 
+template <int MODE>
 class public_key
 {
 public:
 	static constexpr unsigned size()
 	{
-		return crypto_kem_PUBLICKEYBYTES;
+		if (MODE == SIMPLE)
+			return SIMPLE_PUBLIC_KEY_SIZE;
+		else if (MODE == SODIUM)
+			return SODIUM_PUBLIC_KEY_SIZE;
+		else
+			return CBOX_PUBLIC_KEY_SIZE;
 	}
 
 public:
 	public_key()
-	    : _data(size())
+	    : _view(static_cast<unsigned char*>(nullptr), 0)
+	    , _data(size())
 	{}
 
-	public_key(const unsigned char* data)
-	    : _data(size())
+	explicit public_key(const unsigned char* data)
+	    : _view(data, size())
 	{
-		std::copy(data, data+size(), &_data[0]);
 	}
 
 	static public_key from_file(std::string filename)
@@ -38,20 +46,33 @@ public:
 		return pk;
 	}
 
+	bool good() const
+	{
+		return _view.size() != 0 or _data.size() != 0;
+	}
+
 	unsigned char* data()
 	{
-		return _data.data();
+		if (_view.size())
+			return const_cast<unsigned char*>(_view.data());
+		else
+			return _data.data();
 	}
 
 	const unsigned char* data() const
 	{
-		return _data.data();
+		if (_view.size())
+			return _view.data();
+		else
+			return _data.data();
 	}
 
 	bool save(const std::string& filename) const
 	{
+		if (!good())
+			return false;
 		std::ofstream f(filename, std::ios::binary);
-		f.write(reinterpret_cast<const char*>(_data.data()), _data.size());
+		f.write(reinterpret_cast<const char*>(data()), size());
 		return true;
 	}
 
@@ -63,7 +84,12 @@ public:
 	}
 
 protected:
+	const mcleece::byte_view _view;
 	std::vector<unsigned char> _data;
 };
+
+using public_key_simple = public_key<SIMPLE>;
+using public_key_cbox = public_key<CBOX>;
+using public_key_sodium = public_key<SODIUM>;
 
 }

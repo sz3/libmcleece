@@ -7,9 +7,10 @@ set (SOURCES
 	actionsTest.cpp
 	apiTest.cpp
 	apiCliTest.cpp
-	easyTest.cpp
+	cboxTest.cpp
 	messageTest.cpp
 	private_keyTest.cpp
+	simpleTest.cpp
 )
 
 include_directories(
