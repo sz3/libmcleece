@@ -13,6 +13,24 @@
 #include <stdint.h>
 #include <string.h>
 
+/* check if the padding bits of pk are all zero */
+static int check_pk_padding(const unsigned char * pk)
+{
+	unsigned char b;
+	int i, ret;
+
+	b = 0;
+	for (i = 0; i < PK_NROWS; i++)
+		b |= pk[i*PK_ROW_BYTES + PK_ROW_BYTES-1];
+
+	b >>= (PK_NCOLS % 8);
+	b -= 1;
+	b >>= 7;
+	ret = b;
+
+	return ret-1;
+}
+
 int crypto_kem_enc(
        unsigned char *c,
        unsigned char *key,
@@ -22,8 +40,12 @@ int crypto_kem_enc(
 	unsigned char two_e[ 1 + SYS_N/8 ] = {2};
 	unsigned char *e = two_e + 1;
 	unsigned char one_ec[ 1 + SYS_N/8 + (SYND_BYTES + 32) ] = {1};
+	unsigned char mask;
+	int i, padding_ok;
 
 	//
+
+	padding_ok = check_pk_padding(pk);
 
 	encrypt(c, pk, e);
 
@@ -34,7 +56,32 @@ int crypto_kem_enc(
 
 	crypto_hash_32b(key, one_ec, sizeof(one_ec));
 
-	return 0;
+	// clear outputs (set to all 0's) if padding bits are not all zero
+
+	mask = padding_ok;
+	mask ^= 0xFF;
+
+	for (i = 0; i < SYND_BYTES + 32; i++)
+		c[i] &= mask;
+
+	for (i = 0; i < 32; i++)
+		key[i] &= mask;
+
+	return padding_ok;
+}
+
+/* check if the padding bits of c are all zero */
+static int check_c_padding(const unsigned char * c)
+{
+	unsigned char b;
+	int ret;
+
+	b = c[ SYND_BYTES-1 ] >> (PK_NROWS % 8);
+	b -= 1;
+	b >>= 7;
+	ret = b;
+
+	return ret-1;
 }
 
 int crypto_kem_dec(
@@ -43,8 +90,9 @@ int crypto_kem_dec(
        const unsigned char *sk
 )
 {
-	int i;
+	int i, padding_ok;
 
+	unsigned char mask;
 	unsigned char ret_confirm = 0;
 	unsigned char ret_decrypt = 0;
 
@@ -58,6 +106,8 @@ int crypto_kem_dec(
 	const unsigned char *s = sk + 40 + IRR_BYTES + COND_BYTES;
 
 	//
+
+	padding_ok = check_c_padding(c);
 
 	ret_decrypt = decrypt(e, sk + 40, c);
 
@@ -79,7 +129,14 @@ int crypto_kem_dec(
 
 	crypto_hash_32b(key, preimage, sizeof(preimage)); 
 
-	return 0;
+	// clear outputs (set to all 1's) if padding bits are not all zero
+
+	mask = padding_ok;
+
+	for (i = 0; i < 32; i++)
+		key[i] |= mask;
+
+	return padding_ok;
 }
 
 int crypto_kem_keypair
@@ -92,6 +149,7 @@ int crypto_kem_keypair
 	unsigned char seed[ 33 ] = {64};
 	unsigned char r[ SYS_N/8 + (1 << GFBITS)*sizeof(uint32_t) + SYS_T*2 + 32 ];
 	unsigned char *rp, *skp;
+	uint64_t pivots;
 
 	gf f[ SYS_T ]; // element in GF(2^mt)
 	gf irr[ SYS_T ]; // Goppa polynomial
@@ -134,7 +192,7 @@ int crypto_kem_keypair
 		for (i = 0; i < (1 << GFBITS); i++) 
 			perm[i] = load4(rp + i*4); 
 
-		if (pk_gen(pk, skp - IRR_BYTES, perm, pi))
+		if (pk_gen(pk, skp - IRR_BYTES, perm, pi, &pivots))
 			continue;
 
 		controlbitsfrompermutation(skp, pi, GFBITS, 1 << GFBITS);
@@ -147,7 +205,7 @@ int crypto_kem_keypair
 
 		// storing positions of the 32 pivots
 
-		store8(sk + 32, 0xFFFFFFFF);
+		store8(sk + 32, pivots);
 
 		break;
 	}

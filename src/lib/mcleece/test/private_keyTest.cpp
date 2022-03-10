@@ -1,5 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
+#include "TestHelpers.h"
 
 #include "mcleece/private_key.h"
 
@@ -21,7 +22,7 @@ TEST_CASE( "private_keyTest/testSaveLoad", "[unit]" )
 
 	assertTrue( sec.save(tempdir.path() / "foo.sk", "password") );
 
-	mcleece::private_key rek(tempdir.path() / "foo.sk", "password");
+	mcleece::private_key rek = mcleece::private_key::from_file(tempdir.path() / "foo.sk", "password");
 
 	string expected(reinterpret_cast<char*>(sec.data()), sec.size());
 	string actual(reinterpret_cast<char*>(rek.data()), rek.size());

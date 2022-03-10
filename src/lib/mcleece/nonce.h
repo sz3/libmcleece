@@ -10,8 +10,14 @@ namespace mcleece
 
 class nonce
 {
-public:
+protected:
 	static const int SIZE = crypto_secretbox_NONCEBYTES;
+
+public:
+	static constexpr unsigned size()
+	{
+		return SIZE;
+	}
 
 public:
 	nonce()
@@ -19,9 +25,9 @@ public:
 		randomize();
 	}
 
-	nonce(const char* data)
+	nonce(const unsigned char* data)
 	{
-		std::copy(data, data+SIZE, _data.data());
+		std::copy(data, data+size(), _data.data());
 	}
 
 	void randomize()
@@ -32,11 +38,6 @@ public:
 	const unsigned char* data() const
 	{
 		return _data.data();
-	}
-
-	unsigned size() const
-	{
-		return _data.size();
 	}
 
 	nonce& operator++()

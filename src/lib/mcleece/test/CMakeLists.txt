@@ -6,6 +6,8 @@ set (SOURCES
 	test.cpp
 	actionsTest.cpp
 	apiTest.cpp
+	apiCliTest.cpp
+	easyTest.cpp
 	messageTest.cpp
 	private_keyTest.cpp
 )

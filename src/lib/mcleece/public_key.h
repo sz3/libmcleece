@@ -1,25 +1,41 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece8192128/crypto_kem.h"
+#include "mceliece6960119f/crypto_kem.h"
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+
+// should this be a template class?
+// one that manages a vec, and one that uses a byte_view?
 
 namespace mcleece {
 
 class public_key
 {
 public:
+	static constexpr unsigned size()
+	{
+		return crypto_kem_PUBLICKEYBYTES;
+	}
+
+public:
 	public_key()
-	    : _data(crypto_kem_PUBLICKEYBYTES)
+	    : _data(size())
 	{}
 
-	public_key(std::string filename)
-	    : public_key()
+	public_key(const unsigned char* data)
+	    : _data(size())
 	{
-		load(filename);
+		std::copy(data, data+size(), &_data[0]);
+	}
+
+	static public_key from_file(std::string filename)
+	{
+		public_key pk;
+		pk.load(filename);
+		return pk;
 	}
 
 	unsigned char* data()
@@ -30,11 +46,6 @@ public:
 	const unsigned char* data() const
 	{
 		return _data.data();
-	}
-
-	unsigned size() const
-	{
-		return _data.size();
 	}
 
 	bool save(const std::string& filename) const

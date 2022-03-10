@@ -1,6 +1,5 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
-#include "TestHelpers.h"
 
 #include "mcleece/mcleece.h"
 
@@ -9,7 +8,7 @@
 
 using std::string;
 
-TEST_CASE( "apiTest/testRoundtrip", "[unit]" )
+TEST_CASE( "easyTest/testRoundtrip", "[unit]" )
 {
 	std::vector<unsigned char> pubk;
 	pubk.resize(mcleece_PUBLIC_KEY_SIZE);

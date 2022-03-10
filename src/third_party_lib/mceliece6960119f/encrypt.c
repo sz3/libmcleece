@@ -30,19 +30,33 @@ static inline unsigned char same_mask(uint16_t x, uint16_t y)
 /* output: e, an error vector of weight t */
 static void gen_e(unsigned char *e)
 {
-	int i, j, eq;
+	int i, j, eq, count;
+
+	union 
+	{
+		uint16_t nums[ SYS_T*2 ];
+		unsigned char bytes[ SYS_T*2 * sizeof(uint16_t) ];
+	} buf;
 
 	uint16_t ind[ SYS_T ];
-	unsigned char bytes[ sizeof(ind) ];
 	unsigned char mask;	
 	unsigned char val[ SYS_T ];	
 
 	while (1)
 	{
-		randombytes(bytes, sizeof(bytes));
+		randombytes(buf.bytes, sizeof(buf));
 
-		for (i = 0; i < SYS_T; i++)
-			ind[i] = load_gf(bytes + i*2);
+		for (i = 0; i < SYS_T*2; i++)
+			buf.nums[i] = load_gf(buf.bytes + i*2);
+
+		// moving and counting indices in the correct range
+
+		count = 0;
+		for (i = 0; i < SYS_T*2 && count < SYS_T; i++)
+			if (buf.nums[i] < SYS_N)
+				ind[ count++ ] = buf.nums[i];
+		
+		if (count < SYS_T) continue;
 
 		// check for repetition
 
@@ -80,7 +94,7 @@ static void syndrome(unsigned char *s, const unsigned char *pk, unsigned char *e
 	unsigned char b, row[SYS_N/8];
 	const unsigned char *pk_ptr = pk;
 
-	int i, j;
+	int i, j, tail = PK_NROWS % 8;
 
 	for (i = 0; i < SYND_BYTES; i++)
 		s[i] = 0;
@@ -92,6 +106,9 @@ static void syndrome(unsigned char *s, const unsigned char *pk, unsigned char *e
 
 		for (j = 0; j < PK_ROW_BYTES; j++) 
 			row[ SYS_N/8 - PK_ROW_BYTES + j ] = pk_ptr[j];
+
+		for (j = SYS_N/8-1; j >= SYS_N/8 - PK_ROW_BYTES; j--) 
+			row[ j ] = (row[ j ] << tail) | (row[j-1] >> (8-tail));
 
 		row[i/8] |= 1 << (i%8);
 		

@@ -1,22 +1,33 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece8192128/crypto_kem.h"
+#include "util/byte_view.h"
+
+#include "mceliece6960119f/crypto_kem.h"
+#include "sodium/crypto_secretbox.h"
 #include <array>
 #include <string>
 #include <vector>
 
-namespace mcleece {
+static_assert(crypto_kem_BYTES == crypto_secretbox_KEYBYTES, "kem != secretbox keysize. Contemplate meaning of life");
 
+namespace mcleece {
 
 // this class currently serves two distinct purposes right now, which is interesting
 // maybe a protected subclass with the "more public" methods? (and hiding the data accessors?)
 class session_key
 {
-public:
+protected:
 	static const int SIZE = crypto_kem_CIPHERTEXTBYTES;
+
+public:
 	using KEY_ARRAY = std::array<unsigned char, crypto_kem_BYTES>;
 	using ENCRYPTED_ARRAY = std::array<unsigned char, SIZE>;
+
+	static constexpr unsigned size()
+	{
+		return SIZE;
+	}
 
 public:
 	session_key()
@@ -24,12 +35,12 @@ public:
 	{
 	}
 
-	session_key(const std::vector<unsigned char>& encrypted_key)
+	session_key(const mcleece::byte_view& encrypted_key)
 	{
 		_needsDecrypt = init_decode(encrypted_key);
 	}
 
-	bool init_decode(const std::vector<unsigned char>& encrypted_key)
+	bool init_decode(const mcleece::byte_view& encrypted_key)
 	{
 		if (encrypted_key.size() != _encryptedKey.size())
 			return false;

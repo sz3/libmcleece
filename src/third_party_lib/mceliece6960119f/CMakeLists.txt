@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.7)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=native -mtune=native -Wall -DKATNUM=10 \"-DCRYPTO_NAMESPACE(x)=x\" \"-D_CRYPTO_NAMESPACE(x)=_##x\"")
 
@@ -19,5 +19,5 @@ set(SOURCES
 	util.c
 )
 
-add_library(mceliece8192128 STATIC ${SOURCES})
+add_library(mceliece6960119f STATIC ${SOURCES})
 

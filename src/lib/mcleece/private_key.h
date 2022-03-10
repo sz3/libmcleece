@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "mceliece8192128/crypto_kem.h"
+#include "mceliece6960119f/crypto_kem.h"
 #include "util/File.h"
 
 #include "sodium/crypto_pwhash_scryptsalsa208sha256.h"
@@ -15,7 +15,8 @@ namespace mcleece {
 class private_key
 {
 protected:
-	using DATA_ARRAY = std::array<unsigned char, crypto_kem_SECRETKEYBYTES>;
+	static const int SIZE = crypto_kem_SECRETKEYBYTES;
+	using DATA_ARRAY = std::array<unsigned char, SIZE>;
 	using SALT_ARRAY = std::array<unsigned char, crypto_pwhash_scryptsalsa208sha256_SALTBYTES>;
 
 protected:
@@ -27,12 +28,31 @@ protected:
 	}
 
 public:
+	static constexpr unsigned size()
+	{
+		return SIZE;
+	}
+
+public:
 	private_key()
 	{}
 
-	private_key(std::string filename, std::string pw)
+	private_key(const unsigned char* buff)
 	{
-		load(filename, pw);
+		std::copy(buff, buff+_data.size(), &_data[0]);
+	}
+
+	static private_key from_file(std::string filename, std::string pw)
+	{
+		private_key sk;
+		if (!sk.load(filename, pw))
+			sk._good = false;
+		return sk;
+	}
+
+	bool good() const
+	{
+		return _good;
 	}
 
 	unsigned char* data()
@@ -43,11 +63,6 @@ public:
 	const unsigned char* data() const
 	{
 		return _data.data();
-	}
-
-	unsigned size() const
-	{
-		return _data.size();
 	}
 
 	bool save(const std::string& filename, const std::string& pw) const
@@ -95,6 +110,7 @@ public:
 
 protected:
 	DATA_ARRAY _data;
+	bool _good = true;
 };
 
 }

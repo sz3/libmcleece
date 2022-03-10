@@ -2,8 +2,8 @@
 #define PARAMS_H
 
 #define GFBITS 13
-#define SYS_N 8192
-#define SYS_T 128
+#define SYS_N 6960
+#define SYS_T 119
 
 #define COND_BYTES ((1 << (GFBITS-4))*(2*GFBITS - 1))
 #define IRR_BYTES (SYS_T * 2)
