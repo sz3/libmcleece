@@ -96,8 +96,8 @@ Each set of APIs is meant to be used independently. That is, a keypair from `mcl
 
 The differences are:
 * `mcleece_crypto_box` operations have two layers of encryption. The first is libsodium's `crypto_box` (hence the name), the output of which is then wrapped in a `mcleece_simple` call. The `mcleece_simple` calls, therefore, are a single layer of encryption.
-   * since PQC is new and exciting (even if Classic McEliece is fairly old-fashioned and safe), using the extra x25519 layer is probably a good idea, and as such, it is the default.
-* `mcleece_crypto_box` keypairs are larger, since they concatenate both encryption layers.
+   * since PQC is new and exciting (even if Classic McEliece is fairly old-fashioned and safe), using the extra x25519 layer is probably a good idea, and as such, it is the default behavior for the cli.
+* `mcleece_crypto_box` keypairs are larger, since they contain two keypairs. Specifically, the x25519 key bytes are prepended in front of the Classic McEliece key bytes.
 * `mcleece_crypto_box_seal` and `mcleece_crypto_box_seal_open` *allocate extra memory* for the intermediate (libsodium) layer.
 
 ## `mcleece_inplace_crypto_box_seal`
@@ -116,6 +116,7 @@ These functions are meant to be used in conjunction with `mcleece_crypto_box_key
    * the `*_seal_open` call behaves the same -- ciphertext_length should be the same as msg_and_header_length above, but since you presumably have all the bytes, no special adjustment is needed for msg_buff.
    * where special attention is still needed is for `scratch` -- the size of the buffer here is `ciphertext_length - mcleece_simple_MESSAGE_HEADER_SIZE`, or `ciphertext_length - mcleece_crypto_box_MESSAGE_HEADER_SIZE + mcleece_crypto_box_INNER_MESSAGE_HEADER_SIZE` -- which should be identical. (obviously, make sure ciphertext_length is larger than the header size!)
    * after this call is complete -- if it returns 0 (no errors) -- the first `ciphertext_length - mcleece_crypto_box_MESSAGE_HEADER_SIZE` bytes of msg_buff will contain the decrypted data.
+* Example code using these functions can be found in the tests, and also in the "file level" libmcleece APIs.
 
 ## C++ API
 It is not (yet?) collected in a single-header, but the core of libmcleece are a handful of header-only C++ libraries. These can also be used, though I'm not sure how stable the API is yet... 
