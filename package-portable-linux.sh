@@ -20,5 +20,5 @@ update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-7 100
 update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 100
 
 mkdir build-portable/ && cd build-portable/
-/usr/local/bin/cmake .. -DBUILD_PORTABLE_LINUX=1
+/usr/local/bin/cmake .. -DBUILD_PORTABLE_LINUX=1 -DBUILD_LIBSODIUM=1
 make -j5 install
