@@ -17,9 +17,10 @@ endif()
 if(DEFINED BUILD_PORTABLE_LINUX)
 	# statically link c++/gcc (not libc!!)
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -static-libstdc++ -static-libgcc")
-	set(LIBSODIUM sodium.a)
-else()
-	set(LIBSODIUM sodium)
+
+	set(SODIUM_DISABLE_TESTS ON)
+	add_subdirectory(libsodium-cmake)
+	include_directories("${libmcleece_proj_SOURCE_DIR}/libsodium-cmake/libsodium/src/libsodium/include/")
 endif()
 
 if(NOT DEFINED CPPFILESYSTEM)

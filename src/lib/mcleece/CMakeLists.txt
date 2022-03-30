@@ -28,8 +28,7 @@ target_link_libraries(mcleece_static
 	getline
 	keccak
 
-	${LIBSODIUM}
-	ssl
+	sodium
 )
 
 target_link_libraries(mcleece
@@ -40,7 +39,6 @@ target_link_libraries(mcleece
 	keccak
 
 	sodium
-	ssl
 )
 
 add_custom_command(
