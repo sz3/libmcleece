@@ -19,8 +19,8 @@ if(DEFINED BUILD_PORTABLE_LINUX)
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -static-libstdc++ -static-libgcc")
 
 	set(SODIUM_DISABLE_TESTS ON)
-	add_subdirectory(libsodium-cmake)
-	include_directories("${libmcleece_proj_SOURCE_DIR}/libsodium-cmake/libsodium/src/libsodium/include/")
+	add_subdirectory(libsodium)
+	include_directories("${libmcleece_proj_SOURCE_DIR}/libsodium/libsodium/src/libsodium/include/")
 endif()
 
 if(NOT DEFINED CPPFILESYSTEM)
