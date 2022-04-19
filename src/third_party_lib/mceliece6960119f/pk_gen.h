@@ -4,7 +4,6 @@
 
 #ifndef PK_GEN_H
 #define PK_GEN_H
-#define pk_gen CRYPTO_NAMESPACE(pk_gen)
 
 #include "gf.h"
 

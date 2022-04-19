@@ -4,12 +4,6 @@
 
 #ifndef UTIL_H
 #define UTIL_H
-#define bitrev CRYPTO_NAMESPACE(bitrev)
-#define load4 CRYPTO_NAMESPACE(load4)
-#define load8 CRYPTO_NAMESPACE(load8)
-#define load_gf CRYPTO_NAMESPACE(load_gf)
-#define store8 CRYPTO_NAMESPACE(store8)
-#define store_gf CRYPTO_NAMESPACE(store_gf)
 
 #include "gf.h"
 #include <stdint.h>

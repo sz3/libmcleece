@@ -1,7 +1,6 @@
 #ifndef int32_sort_h
 #define int32_sort_h
 
-#define int32_sort CRYPTO_NAMESPACE(int32_sort)
 
 #include <inttypes.h>
 

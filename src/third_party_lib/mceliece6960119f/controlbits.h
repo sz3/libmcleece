@@ -5,7 +5,6 @@
 #ifndef CONTROLBITS_H
 #define CONTROLBITS_H
 
-#define controlbitsfrompermutation CRYPTO_NAMESPACE(controlbitsfrompermutation)
 
 #include <inttypes.h>
 

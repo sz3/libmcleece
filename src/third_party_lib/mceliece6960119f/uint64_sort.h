@@ -1,7 +1,6 @@
 #ifndef uint64_sort_h
 #define uint64_sort_h
 
-#define int64_sort CRYPTO_NAMESPACE(int64_sort)
 
 #include <inttypes.h>
 
