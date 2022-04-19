@@ -2,49 +2,38 @@ name: ci
 
 on: [push, pull_request]
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        config:
-        - name: "linux gcc7"
-          os: ubuntu-18.04
-          cc: "gcc-7"
-          cxx: "g++-7"
-        - name: "linux clang"
-          os: ubuntu-18.04
-          cc: "clang"
-          cxx: "clang++"
+        os: [ubuntu-18.04, macos-latest]
 
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: sudo apt-get install libssl-dev libsodium-dev
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
+      shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: CXX=${{ matrix.config.cxx }} CC=${{ matrix.config.cc }} cmake $GITHUB_WORKSPACE
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIBSODIUM=1
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
-      run: make -j2 && make install
-
-    - name: Setup tests
-      working-directory: ${{runner.workspace}}/libmcleece
       shell: bash
-      run: |
-         (cd dist/bin/ && (echo "password" | ./mcleececli keypair -s --key-path=/tmp/test))
-         (cd dist/bin/ && (echo "password" | ./mcleececli keypair --key-path=/tmp/cbox))
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --target install -j 2
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
-      run: make test CTEST_OUTPUT_ON_FAILURE=TRUE
+      run: ctest --output-on-failure
 
   cppcheck:
     runs-on: ubuntu-18.04
