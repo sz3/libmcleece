@@ -8,20 +8,17 @@
 
 namespace TestHelpers
 {
-	inline bool generate_keypair(std::experimental::filesystem::path target_prefix, int mode=mcleece::SIMPLE)
+	inline void generate_keypair(std::experimental::filesystem::path target_prefix, int mode=mcleece::SIMPLE)
 	{
 		std::string basename = std::experimental::filesystem::path(target_prefix).filename();
-		std::string pk = std::experimental::filesystem::temp_directory_path() / fmt::format("{}.pk", basename);
-		std::string sk = std::experimental::filesystem::temp_directory_path() / fmt::format("{}.sk", basename);
-		if (File(pk).good() and File(sk).good())
-		{
-			std::experimental::filesystem::copy(pk, target_prefix.replace_extension(".pk"));
-			std::experimental::filesystem::copy(sk, target_prefix.replace_extension(".sk"));
-			return false;
-		}
-		else
-			mcleece::actions::keypair_to_file(target_prefix, "password", mode);
-		return true;
+		std::string path = std::experimental::filesystem::temp_directory_path() / basename;
+		std::string pk = fmt::format("{}.pk", path);
+		std::string sk = fmt::format("{}.sk", path);
+		if (!File(pk).good() or !File(sk).good())
+			mcleece::actions::keypair_to_file(path, "password", mode);
+
+		std::experimental::filesystem::copy(pk, target_prefix.replace_extension(".pk"));
+		std::experimental::filesystem::copy(sk, target_prefix.replace_extension(".sk"));
 	}
 }
 

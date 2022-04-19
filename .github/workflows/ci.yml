@@ -35,13 +35,6 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --target install -j 2
 
-    - name: Setup tests
-      working-directory: ${{runner.workspace}}/libmcleece
-      shell: bash
-      run: |
-         (cd dist/bin/ && (echo "password" | ./mcleececli keypair -s --key-path=/tmp/test))
-         (cd dist/bin/ && (echo "password" | ./mcleececli keypair --key-path=/tmp/cbox))
-
     - name: Test
       working-directory: ${{runner.workspace}}/build
       run: ctest --output-on-failure
