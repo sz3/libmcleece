@@ -22,7 +22,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: CXX=${{ matrix.config.cxx }} CC=${{ matrix.config.cc }} cmake $GITHUB_WORKSPACE -DBUILD_LIBSODIUM=1
+      run: cmake $GITHUB_WORKSPACE -DBUILD_LIBSODIUM=1
 
     - name: Build
       shell: bash
