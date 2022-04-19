@@ -24,12 +24,12 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIBSODIUM=1
 
     - name: Build
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIBSODIUM=1 --build . --target install -j 2
+      run: cmake --build . --target install -j 2
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
