@@ -33,7 +33,7 @@ jobs:
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
-      run: make -j2 && make install
+      run: cmake --build . --target install -j 2
 
     - name: Setup tests
       working-directory: ${{runner.workspace}}/libmcleece
@@ -44,7 +44,7 @@ jobs:
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
-      run: make test CTEST_OUTPUT_ON_FAILURE=TRUE
+      run: ctest --output-on-failure
 
   cppcheck:
     runs-on: ubuntu-18.04
