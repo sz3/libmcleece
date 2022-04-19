@@ -28,7 +28,7 @@ if(DEFINED BUILD_LIBSODIUM)
 	include_directories("${libmcleece_proj_SOURCE_DIR}/libsodium/libsodium/src/libsodium/include/")
 endif()
 
-if(NOT DEFINED CPPFILESYSTEM)
+if(NOT DEFINED CPPFILESYSTEM AND NOT APPLE)
     set(CPPFILESYSTEM "stdc++fs")
 endif()
 
