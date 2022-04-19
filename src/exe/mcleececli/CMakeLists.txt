@@ -14,11 +14,13 @@ target_link_libraries(mcleececli
 	mcleece_static
 )
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
 add_custom_command(
 	TARGET mcleececli POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mcleececli> mcleececli.dbg
-	COMMAND ${CMAKE_STRIP} $<TARGET_FILE:mcleececli>
+	COMMAND ${CMAKE_STRIP} -g $<TARGET_FILE:mcleececli>
 )
+endif()
 
 install(
 	TARGETS mcleececli
