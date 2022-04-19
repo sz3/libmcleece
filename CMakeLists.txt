@@ -7,6 +7,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 	set(CMAKE_INSTALL_PREFIX "${libmcleece_proj_SOURCE_DIR}/dist" CACHE PATH "..." FORCE)
 endif()
 
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 if(NOT WIN32)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
@@ -15,7 +16,7 @@ endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c99 -Os")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Os")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wall -g -O2")
 endif()
 

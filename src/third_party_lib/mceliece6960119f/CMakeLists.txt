@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DKATNUM=10 -DCRYPTO_NAMESPACE\\(x\\)=x")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DKATNUM=10")
 
 set(SOURCES
 	randombytes.h
