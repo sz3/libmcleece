@@ -2,6 +2,9 @@ name: ci
 
 on: [push, pull_request]
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -21,7 +24,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DBUILD_LIBSODIUM=1
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIBSODIUM=1
 
     - name: Build
       shell: bash
