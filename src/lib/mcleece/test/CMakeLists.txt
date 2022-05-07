@@ -11,6 +11,7 @@ set (SOURCES
 	messageTest.cpp
 	private_keyTest.cpp
 	simpleTest.cpp
+	sodiumCryptoBoxTest.cpp
 )
 
 include_directories(
