@@ -91,9 +91,9 @@ public:
 			return -10;
 
 		if (clen < crypto_box_SEALBYTES)
-			return -1;
+			return -9;
 		if (clen < crypto_box_PUBLICKEYBYTES)
-			return -2;
+			return -8;
 
 		mcleece::byte_view input(c, clen);
 
@@ -110,10 +110,10 @@ public:
 		// compute secret key
 		unsigned char k[crypto_box_BEFORENMBYTES];
 		if (crypto_box_beforenm(k, epk, _sk) != 0)
-			return -3;
+			return -7;
 
 		if (_mix and !_mix(input, k, nonce))
-			return -4;
+			return -6;
 
 		return ::crypto_secretbox_open_easy(m, input.data(), input.size(), nonce, k);
 	}
