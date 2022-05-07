@@ -7,6 +7,7 @@
 #include "sodium/crypto_generichash.h"
 #include "sodium/crypto_secretbox.h"
 #include <algorithm>
+#include <functional>
 
 // namespace not_sodium?
 namespace mcleece {
@@ -15,9 +16,15 @@ class sodium_crypto_box
 {
 public:
 	sodium_crypto_box(const unsigned char* pk, const unsigned char* sk=nullptr)
-	    : _pk(pk)
-	    , _sk(sk)
+		: _pk(pk)
+		, _sk(sk)
 	{}
+
+	sodium_crypto_box& mix(const std::function<bool(mcleece::byte_view&, unsigned char*, const unsigned char*)>& fun)
+	{
+		_mix = fun;
+		return *this;
+	}
 
 protected:
 	int compute_nonce(unsigned char *nonce, const unsigned char *pk1, const unsigned char *pk2)
@@ -60,8 +67,8 @@ public:
 		mcleece::byte_view output(c, mlen+crypto_box_PUBLICKEYBYTES); // TODO: this size is unknowable?
 		output.write(epk, crypto_box_PUBLICKEYBYTES);
 
-		// if (fun and !fun(output&, nonce, k&))
-		// return -3
+		if (_mix and !_mix(output, k, nonce))
+			return -3;
 
 		int ret = ::crypto_secretbox_easy(const_cast<unsigned char*>(output.data()), m, mlen, nonce, k);
 
@@ -105,7 +112,8 @@ public:
 		if (crypto_box_beforenm(k, epk, _sk) != 0)
 			return -3;
 
-		// fun(c&, nonce, k&)
+		if (_mix and !_mix(input, k, nonce))
+			return -4;
 
 		return ::crypto_secretbox_open_easy(m, input.data(), input.size(), nonce, k);
 	}
@@ -113,6 +121,9 @@ public:
 protected:
 	const unsigned char* _pk;
 	const unsigned char* _sk;
+
+	// data, nonce(24), key(32)
+	std::function<bool(mcleece::byte_view&, unsigned char*, const unsigned char*)> _mix;
 };
 
 }

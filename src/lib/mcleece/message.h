@@ -26,8 +26,8 @@ namespace message {
 			return 2;
 
 		int res = crypto_secretbox_easy(
-		    const_cast<unsigned char*>(ciphertext.data()), message.data(), message.size(),
-		    n.data(), session.key().data()
+			const_cast<unsigned char*>(ciphertext.data()), message.data(), message.size(),
+			n.data(), session.key().data()
 		);
 		if (res != 0)
 			return 3;
@@ -58,8 +58,8 @@ namespace message {
 			return 2;
 
 		unsigned res = crypto_secretbox_open_easy(
-		    const_cast<unsigned char*>(message.data()), ciphertext.data(), ciphertext.size(),
-		    n.data(), session.key().data()
+			const_cast<unsigned char*>(message.data()), ciphertext.data(), ciphertext.size(),
+			n.data(), session.key().data()
 		);
 		if (res != 0)
 			return 3;

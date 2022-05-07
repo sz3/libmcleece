@@ -31,10 +31,52 @@ namespace cbox {
 		return 0;
 	}
 
+	inline void mix_buf(unsigned char* out, const unsigned char* in, unsigned n)
+	{
+		for (unsigned i = 0; i < n; ++i)
+			out[i] ^= in[i];
+	}
+
+	inline int mcleece_seal_mix(mcleece::byte_view& out, unsigned char* key, const unsigned char* nonce, const mcleece::public_key_simple& pubk)
+	{
+		// generate and write (encrypted) McEliece session key to out
+		mcleece::session_key session = mcleece::keygen::generate_session_key(pubk);
+		out = {out.data(), out.size() + session.encrypted_key().size()};
+		out.write(session.encrypted_key().data(), session.encrypted_key().size());
+
+		// then mix key and session
+		// currently: xor
+		mix_buf(key, session.key().data(), session.key().size());
+
+		return 0;
+	}
+
+	inline int mcleece_seal_open_mix(mcleece::byte_view& in, unsigned char* key, const unsigned char* nonce, const mcleece::private_key_simple& secret)
+	{
+		// read and decode (encrypted) McEliece session key from in
+		if (in.size() < mcleece::session_key::size())
+			return 64;
+
+		mcleece::session_key session = mcleece::keygen::decode_session_key(in, secret);
+		in.advance(mcleece::session_key::size());
+
+		// then mix key and session
+		// currently: xor
+		mix_buf(key, session.key().data(), session.key().size());
+
+		return 0;
+	}
+
 	inline int crypto_box_seal(mcleece::byte_view output_c, const mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
 	{
 		if (output_c.size() < message.size() + FULL_MESSAGE_HEADER_SIZE)
 			return 65;
+
+		mcleece::public_key_simple pks(pubk.data() + crypto_box_PUBLICKEYBYTES);
+		auto mix = [&pks](mcleece::byte_view& out, unsigned char* key, const unsigned char* nonce)
+		{
+			return mcleece_seal_mix(out, key, nonce, pks);
+		};
 
 		// inner layer: crypto_box. outer layer: libmcleece encrypt
 		std::string scratch;
