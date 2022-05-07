@@ -18,6 +18,7 @@ namespace cbox {
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key_cbox::size();
 	static const unsigned SODIUM_MESSAGE_HEADER_SIZE = crypto_box_SEALBYTES;
 	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEADER_SIZE + SODIUM_MESSAGE_HEADER_SIZE;
+	static const unsigned MSG_HEADER_SIZE = mcleece::session_key::size() + crypto_box_SEALBYTES;
 
 	inline int crypto_box_keypair(public_key_cbox& pubk, private_key_cbox& secret)
 	{
@@ -58,7 +59,8 @@ namespace cbox {
 		if (in.size() < mcleece::session_key::size())
 			return false;
 
-		mcleece::session_key session = mcleece::keygen::decode_session_key(in, secret);
+		mcleece::byte_view session_bytes(in.data(), mcleece::session_key::size());
+		mcleece::session_key session = mcleece::keygen::decode_session_key(session_bytes, secret);
 		in.advance(mcleece::session_key::size());
 
 		// then mix key and session
@@ -70,7 +72,7 @@ namespace cbox {
 
 	inline int crypto_box_seal(mcleece::byte_view output_c, const mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
 	{
-		if (output_c.size() < message.size() + FULL_MESSAGE_HEADER_SIZE)
+		if (output_c.size() < message.size() + MSG_HEADER_SIZE)
 			return 65;
 
 		mcleece::public_key_simple pks(pubk.data() + crypto_box_PUBLICKEYBYTES);
@@ -86,7 +88,7 @@ namespace cbox {
 
 	inline int crypto_box_seal_open(mcleece::byte_view output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_sodium& pubk, const mcleece::private_key_cbox& secret)
 	{
-		if (ciphertext.size() < FULL_MESSAGE_HEADER_SIZE)
+		if (ciphertext.size() < MSG_HEADER_SIZE)
 			return 65;
 
 		mcleece::private_key_simple sk(secret.data() + crypto_box_SECRETKEYBYTES);

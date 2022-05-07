@@ -22,6 +22,7 @@ const unsigned mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE = mcleece::cbox::SODIUM
 const unsigned mcleece_crypto_box_SECRET_KEY_SIZE = mcleece::cbox::SECRET_KEY_SIZE;
 const unsigned mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE = mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE;
 const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
+const unsigned mcleece_crypto_box_MSG_HEADER_SIZE = mcleece::cbox::MSG_HEADER_SIZE;
 
 const int mcleece_MODE_SIMPLE = mcleece::SIMPLE;
 const int mcleece_MODE_CRYPTO_BOX = mcleece::CBOX;
@@ -59,7 +60,7 @@ int mcleece_simple_decrypt(unsigned char* decrypted_out, const unsigned char* ci
 int mcleece_crypto_box_seal(unsigned char* ciphertext_out, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk)
 {
 	mcleece::byte_view is(msg, msg_length);
-	mcleece::byte_view os(ciphertext_out, msg_length + mcleece_crypto_box_MESSAGE_HEADER_SIZE);
+	mcleece::byte_view os(ciphertext_out, msg_length + mcleece_crypto_box_MSG_HEADER_SIZE);
 	mcleece::public_key_cbox rpk(recipient_pubk);
 	return mcleece::cbox::crypto_box_seal(os, is, rpk);
 }
@@ -67,7 +68,7 @@ int mcleece_crypto_box_seal(unsigned char* ciphertext_out, const unsigned char* 
 int mcleece_crypto_box_seal_open(unsigned char* decrypted_out, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_pubk, unsigned char* recipient_secret)
 {
 	mcleece::byte_view is(ciphertext, ciphertext_length);
-	mcleece::byte_view os(decrypted_out, ciphertext_length - mcleece_crypto_box_MESSAGE_HEADER_SIZE);
+	mcleece::byte_view os(decrypted_out, ciphertext_length - mcleece_crypto_box_MSG_HEADER_SIZE);
 	mcleece::public_key_sodium rpk(recipient_pubk);
 	mcleece::private_key_cbox rsk(recipient_secret);
 	return mcleece::cbox::crypto_box_seal_open(os, is, rpk, rsk);

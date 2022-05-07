@@ -15,6 +15,7 @@ extern const unsigned mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE;
 extern const unsigned mcleece_crypto_box_SECRET_KEY_SIZE;
 extern const unsigned mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE;
 extern const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE;
+extern const unsigned mcleece_crypto_box_MSG_HEADER_SIZE;
 
 extern const int mcleece_MODE_SIMPLE;
 extern const int mcleece_MODE_CRYPTO_BOX;
