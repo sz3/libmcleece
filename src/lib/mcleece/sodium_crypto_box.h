@@ -31,6 +31,13 @@ protected:
 public:
 	int seal(unsigned char* c, const unsigned char* m, unsigned long long mlen)
 	{
+		// there are 4 operations:
+		// 1. compute nonce (from epk and _pk)
+		// 2. write epk to ciphertext
+		// 3. compute key (from esk and _pk)
+		// 4. write crypto_secretbox(key) to ciphertext
+		// #4 is changing (will be mixed with McEliece result. We also want the nonce back...
+
 		unsigned char nonce[crypto_box_NONCEBYTES];
 		unsigned char epk[crypto_box_PUBLICKEYBYTES];
 		unsigned char esk[crypto_box_SECRETKEYBYTES];
@@ -61,11 +68,14 @@ public:
 
 	int seal_open(unsigned char* m, const unsigned char* c, unsigned long long clen)
 	{
+		// 3 operations:
+		// 1. compute nonce from c (epk and _pk)
+		// 2. compute key from c (epk and _sk)
+		// 3. decrypt with crypto_secretbox_open(key)
+
 		if (_sk == nullptr)
 			return -10;
 
-		// compute nonce
-		unsigned char nonce[crypto_box_NONCEBYTES];
 		if (clen < crypto_box_SEALBYTES)
 			return -1;
 		if (clen < crypto_box_PUBLICKEYBYTES)
@@ -76,6 +86,8 @@ public:
 		c += crypto_box_PUBLICKEYBYTES;
 		clen -= crypto_box_PUBLICKEYBYTES;
 
+		// compute nonce
+		unsigned char nonce[crypto_box_NONCEBYTES];
 		compute_nonce(nonce, epk, _pk);
 
 		// TODO: assert crypto_box_PUBLICKEYBYTES < crypto_box_SEALBYTES ?
