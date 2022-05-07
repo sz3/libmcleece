@@ -6,6 +6,7 @@
 #include "sodium/crypto_secretbox.h"
 #include <algorithm>
 
+// namespace not_sodium?
 namespace mcleece {
 
 class sodium_crypto_box
@@ -41,11 +42,11 @@ public:
 		// compute nonce
 		compute_nonce(nonce, epk, _pk);
 
-		// generate secret key
+		// compute secret key
 		// TODO: assert crypto_box_BEFORENMBYTES >= crypto_secretbox_KEYBYTES
 		unsigned char k[crypto_box_BEFORENMBYTES];
-		::crypto_box_beforenm(k, _pk, esk);
-
+		if (crypto_box_beforenm(k, _pk, esk) != 0)
+			return -2;
 
 		int ret = ::crypto_secretbox_easy(c + crypto_box_PUBLICKEYBYTES, m, mlen, nonce, k);
 
@@ -61,9 +62,30 @@ public:
 	int seal_open(unsigned char* m, const unsigned char* c, unsigned long long clen)
 	{
 		if (_sk == nullptr)
+			return -10;
+
+		// compute nonce
+		unsigned char nonce[crypto_box_NONCEBYTES];
+		if (clen < crypto_box_SEALBYTES)
+			return -1;
+		if (clen < crypto_box_PUBLICKEYBYTES)
 			return -2;
 
-		return ::crypto_box_seal_open(m, c, clen, _pk, _sk);
+		// epk is at the start of c!!
+		const unsigned char* epk = c;
+		c += crypto_box_PUBLICKEYBYTES;
+		clen -= crypto_box_PUBLICKEYBYTES;
+
+		compute_nonce(nonce, epk, _pk);
+
+		// TODO: assert crypto_box_PUBLICKEYBYTES < crypto_box_SEALBYTES ?
+
+		// compute secret key
+		unsigned char k[crypto_box_BEFORENMBYTES];
+		if (crypto_box_beforenm(k, epk, _sk) != 0)
+			return -3;
+
+		return ::crypto_secretbox_open_easy(m, c, clen, nonce, k);
 	}
 
 protected:
