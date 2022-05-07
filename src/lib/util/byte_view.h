@@ -10,8 +10,12 @@ namespace mcleece {
 	{
 		using std::basic_string_view<unsigned char>::basic_string_view;
 
-		byte_view(char* data, size_t len)
+		byte_view(unsigned char* data, size_t len)
 			: std::basic_string_view<unsigned char>::basic_string_view(reinterpret_cast<unsigned char*>(data), len)
+		{}
+
+		byte_view(char* data, size_t len)
+			: mcleece::byte_view(reinterpret_cast<unsigned char*>(data), len)
 		{}
 
 		byte_view(const char* data, size_t len)

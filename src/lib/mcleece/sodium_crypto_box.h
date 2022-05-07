@@ -1,6 +1,8 @@
 // MIT?
 #pragma once
 
+#include "util/byte_view.h"
+
 #include "sodium/crypto_box.h"
 #include "sodium/crypto_generichash.h"
 #include "sodium/crypto_secretbox.h"
@@ -55,9 +57,14 @@ public:
 		if (crypto_box_beforenm(k, _pk, esk) != 0)
 			return -2;
 
-		int ret = ::crypto_secretbox_easy(c + crypto_box_PUBLICKEYBYTES, m, mlen, nonce, k);
+		mcleece::byte_view output(c, mlen+crypto_box_PUBLICKEYBYTES); // TODO: this size is unknowable?
+		output.write(epk, crypto_box_PUBLICKEYBYTES);
 
-		std::copy(epk, epk+crypto_box_PUBLICKEYBYTES, c);
+		// if (fun and !fun(output&, nonce, k&))
+		// return -3
+
+		int ret = ::crypto_secretbox_easy(const_cast<unsigned char*>(output.data()), m, mlen, nonce, k);
+
 		// TODO: zero out memory
 		/*sodium_memzero(esk, sizeof esk);
 		sodium_memzero(epk, sizeof epk);
@@ -81,10 +88,11 @@ public:
 		if (clen < crypto_box_PUBLICKEYBYTES)
 			return -2;
 
+		mcleece::byte_view input(c, clen);
+
 		// epk is at the start of c!!
-		const unsigned char* epk = c;
-		c += crypto_box_PUBLICKEYBYTES;
-		clen -= crypto_box_PUBLICKEYBYTES;
+		const unsigned char* epk = input.data();
+		input.advance(crypto_box_PUBLICKEYBYTES);
 
 		// compute nonce
 		unsigned char nonce[crypto_box_NONCEBYTES];
@@ -97,7 +105,9 @@ public:
 		if (crypto_box_beforenm(k, epk, _sk) != 0)
 			return -3;
 
-		return ::crypto_secretbox_open_easy(m, c, clen, nonce, k);
+		// fun(c&, nonce, k&)
+
+		return ::crypto_secretbox_open_easy(m, input.data(), input.size(), nonce, k);
 	}
 
 protected:
