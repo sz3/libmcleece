@@ -88,6 +88,9 @@ namespace cbox {
 
 	inline int crypto_box_seal_open(mcleece::byte_view output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_sodium& pubk, const mcleece::private_key_cbox& secret)
 	{
+		if (!pubk.good())
+			return 64;
+
 		if (ciphertext.size() < MSG_HEADER_SIZE)
 			return 65;
 
