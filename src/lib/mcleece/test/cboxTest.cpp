@@ -23,7 +23,7 @@ TEST_CASE( "cboxTest/testRoundtrip", "[unit]" )
 
 	string srcMessage = "hello friends";
 	std::vector<unsigned char> cipherText;
-	cipherText.resize(srcMessage.size() + mcleece_crypto_box_MSG_HEADER_SIZE);
+	cipherText.resize(srcMessage.size() + mcleece_crypto_box_MESSAGE_HEADER_SIZE);
 	{
 		int res = mcleece_crypto_box_seal(cipherText.data(), reinterpret_cast<unsigned char*>(srcMessage.data()), srcMessage.size(), pubk.data());
 		assertEquals( 0, res );
@@ -36,48 +36,5 @@ TEST_CASE( "cboxTest/testRoundtrip", "[unit]" )
 		assertEquals(0, res);
 	}
 
-	assertEquals( "hello friends", dstMessage );
-}
-
-TEST_CASE( "cboxTest/testInplaceRoundtrip", "[unit]" )
-{
-	// alternative API to reuse the input buffer for output...
-	std::vector<unsigned char> pubk;
-	pubk.resize(mcleece_crypto_box_PUBLIC_KEY_SIZE);
-
-	std::vector<unsigned char> secret;
-	secret.resize(mcleece_crypto_box_SECRET_KEY_SIZE);
-
-	{
-		int res = mcleece_crypto_box_keypair(pubk.data(), secret.data());
-		assertEquals( 0, res );
-	}
-
-	string srcMessage = "hello friends";
-
-	string data = srcMessage;
-	data.resize(srcMessage.size() + mcleece_crypto_box_MESSAGE_HEADER_SIZE);
-	assertTrue( data.substr(0, 5) == "hello" );
-
-	{
-		std::vector<unsigned char> scratch;
-		scratch.resize(data.size() - mcleece_simple_MESSAGE_HEADER_SIZE);
-		int res = mcleece_inplace_crypto_box_seal(reinterpret_cast<unsigned char*>(data.data()), data.size(), scratch.data(), pubk.data());
-		assertEquals( 0, res );
-
-		// assert we can decrypt the libsodium part from `scratch`??
-	}
-
-	// data is now our encrypted buffer
-	assertTrue( data.substr(0, 5) != "hello" );
-
-	{
-		std::vector<unsigned char> scratch;
-		scratch.resize(data.size() - mcleece_simple_MESSAGE_HEADER_SIZE);
-		int res = mcleece_inplace_crypto_box_seal_open(reinterpret_cast<unsigned char*>(data.data()), data.size(), scratch.data(), pubk.data(), secret.data());
-		assertEquals(0, res);
-	}
-
-	string dstMessage = data.substr(0, srcMessage.size());
 	assertEquals( "hello friends", dstMessage );
 }

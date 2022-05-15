@@ -52,7 +52,7 @@ namespace actions {
 		if (!is)
 			return 66;
 
-		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::MSG_HEADER_SIZE;
+		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::MESSAGE_HEADER_SIZE;
 
 		std::string data;
 		data.resize(max_length);
@@ -105,7 +105,7 @@ namespace actions {
 		if (!is)
 			return 66;
 
-		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::MSG_HEADER_SIZE;
+		const int header_length = (MODE == SIMPLE)? mcleece::simple::MESSAGE_HEADER_SIZE : mcleece::cbox::MESSAGE_HEADER_SIZE;
 
 		std::string data;
 		data.resize(max_length + header_length);

@@ -13,9 +13,7 @@ extern const unsigned mcleece_simple_MESSAGE_HEADER_SIZE;
 extern const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE;
 extern const unsigned mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE;
 extern const unsigned mcleece_crypto_box_SECRET_KEY_SIZE;
-extern const unsigned mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE;
 extern const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE;
-extern const unsigned mcleece_crypto_box_MSG_HEADER_SIZE;
 
 extern const int mcleece_MODE_SIMPLE;
 extern const int mcleece_MODE_CRYPTO_BOX;
@@ -28,9 +26,6 @@ int mcleece_simple_decrypt(unsigned char* decrypted_out, const unsigned char* ci
 
 int mcleece_crypto_box_seal(unsigned char* ciphertext_out, const unsigned char* msg, unsigned msg_length, unsigned char* recipient_pubk);
 int mcleece_crypto_box_seal_open(unsigned char* decrypted_out, const unsigned char* ciphertext, unsigned ciphertext_length, unsigned char* recipient_pubk, unsigned char* recipient_secret);
-
-int mcleece_inplace_crypto_box_seal(unsigned char* buff, unsigned msg_and_header_length, unsigned char* scratch, unsigned char* recipient_pubk);
-int mcleece_inplace_crypto_box_seal_open(unsigned char* buff, unsigned ciphertext_length, unsigned char* scratch, unsigned char* recipient_pubk, unsigned char* recipient_secret);
 
 int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode);
 
