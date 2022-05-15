@@ -5,6 +5,8 @@
 #include "cbox.h"
 #include "constants.h"
 #include "message.h"
+#include "private_key.h"
+#include "public_key.h"
 #include "simple.h"
 #include "util/byte_view.h"
 #include <fstream>
@@ -20,8 +22,7 @@ const unsigned mcleece_simple_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEA
 const unsigned mcleece_crypto_box_PUBLIC_KEY_SIZE = mcleece::cbox::PUBLIC_KEY_SIZE;
 const unsigned mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE = mcleece::cbox::SODIUM_PUBLIC_KEY_SIZE;
 const unsigned mcleece_crypto_box_SECRET_KEY_SIZE = mcleece::cbox::SECRET_KEY_SIZE;
-const unsigned mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE = mcleece::cbox::SODIUM_MESSAGE_HEADER_SIZE;
-const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::cbox::FULL_MESSAGE_HEADER_SIZE;
+const unsigned mcleece_crypto_box_MESSAGE_HEADER_SIZE = mcleece::cbox::MESSAGE_HEADER_SIZE;
 
 const int mcleece_MODE_SIMPLE = mcleece::SIMPLE;
 const int mcleece_MODE_CRYPTO_BOX = mcleece::CBOX;
@@ -71,23 +72,6 @@ int mcleece_crypto_box_seal_open(unsigned char* decrypted_out, const unsigned ch
 	mcleece::public_key_sodium rpk(recipient_pubk);
 	mcleece::private_key_cbox rsk(recipient_secret);
 	return mcleece::cbox::crypto_box_seal_open(os, is, rpk, rsk);
-}
-
-int mcleece_inplace_crypto_box_seal(unsigned char* buff, unsigned msg_and_header_length, unsigned char* scratch, unsigned char* recipient_pubk)
-{
-	mcleece::byte_view inout(buff, msg_and_header_length);
-	mcleece::byte_view scr(scratch, msg_and_header_length - mcleece_simple_MESSAGE_HEADER_SIZE); // aka: msg_length + crypto_box_SEALBYTES
-	mcleece::public_key_cbox rpk(recipient_pubk);
-	return mcleece::cbox::inplace_crypto_box_seal(inout, scr, rpk);
-}
-
-int mcleece_inplace_crypto_box_seal_open(unsigned char* buff, unsigned ciphertext_length, unsigned char* scratch, unsigned char* recipient_pubk, unsigned char* recipient_secret)
-{
-	mcleece::byte_view inout(buff, ciphertext_length);
-	mcleece::byte_view scr(scratch, ciphertext_length - mcleece_simple_MESSAGE_HEADER_SIZE); // aka: msg_length + crypto_box_SEALBYTES
-	mcleece::public_key_sodium rpk(recipient_pubk);
-	mcleece::private_key_cbox rsk(recipient_secret);
-	return mcleece::cbox::inplace_crypto_box_seal_open(inout, scr, rpk, rsk);
 }
 
 int mcleece_keypair_to_file(const char* keypath, unsigned keypath_len, const char* pw, unsigned pw_length, int mode)

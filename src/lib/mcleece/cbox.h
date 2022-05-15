@@ -2,6 +2,7 @@
 #pragma once
 
 #include "simple.h"
+#include "sodium_crypto_box.h"
 #include "serialize/format.h"
 #include "util/byte_view.h"
 
@@ -15,8 +16,7 @@ namespace cbox {
 	static const unsigned PUBLIC_KEY_SIZE = mcleece::public_key_cbox::size();
 	static const unsigned SODIUM_PUBLIC_KEY_SIZE = mcleece::public_key_sodium::size();
 	static const unsigned SECRET_KEY_SIZE = mcleece::private_key_cbox::size();
-	static const unsigned SODIUM_MESSAGE_HEADER_SIZE = crypto_box_SEALBYTES;
-	static const unsigned FULL_MESSAGE_HEADER_SIZE = mcleece::simple::MESSAGE_HEADER_SIZE + SODIUM_MESSAGE_HEADER_SIZE;
+	static const unsigned MESSAGE_HEADER_SIZE = mcleece::session_key::size() + crypto_box_SEALBYTES;
 
 	inline int crypto_box_keypair(public_key_cbox& pubk, private_key_cbox& secret)
 	{
@@ -31,90 +31,75 @@ namespace cbox {
 		return 0;
 	}
 
+	inline void mix_buf(unsigned char* out, const unsigned char* in, unsigned n)
+	{
+		for (unsigned i = 0; i < n; ++i)
+			out[i] ^= in[i];
+	}
+
+	inline bool mcleece_seal_mix(mcleece::byte_view& out, unsigned char* key, const unsigned char* nonce, const mcleece::public_key_simple& pubk)
+	{
+		// generate and write (encrypted) McEliece session key to out
+		mcleece::session_key session = mcleece::keygen::generate_session_key(pubk);
+		out = {out.data(), out.size() + session.encrypted_key().size()};
+		out.write(session.encrypted_key().data(), session.encrypted_key().size());
+
+		// then mix key and session
+		// currently: xor
+		mix_buf(key, session.key().data(), session.key().size());
+
+		return true;
+	}
+
+	inline bool mcleece_seal_open_mix(mcleece::byte_view& in, unsigned char* key, const unsigned char* nonce, const mcleece::private_key_simple& secret)
+	{
+		// read and decode (encrypted) McEliece session key from in
+		if (in.size() < mcleece::session_key::size())
+			return false;
+
+		mcleece::byte_view session_bytes(in.data(), mcleece::session_key::size());
+		mcleece::session_key session = mcleece::keygen::decode_session_key(session_bytes, secret);
+		in.advance(mcleece::session_key::size());
+
+		// then mix key and session
+		// currently: xor
+		mix_buf(key, session.key().data(), session.key().size());
+
+		return true;
+	}
+
 	inline int crypto_box_seal(mcleece::byte_view output_c, const mcleece::byte_view message, const mcleece::public_key_cbox& pubk)
 	{
-		if (output_c.size() < message.size() + FULL_MESSAGE_HEADER_SIZE)
+		if (output_c.size() < message.size() + MESSAGE_HEADER_SIZE)
 			return 65;
 
-		// inner layer: crypto_box. outer layer: libmcleece encrypt
-		std::string scratch;
-		scratch.resize(crypto_box_SEALBYTES + message.size());
+		mcleece::public_key_simple pks(pubk.data() + crypto_box_PUBLICKEYBYTES);
+		auto mix = [&pks](mcleece::byte_view& out, unsigned char* key, const unsigned char* nonce)
+		{
+			return mcleece_seal_mix(out, key, nonce, pks);
+		};
 
-		int res = ::crypto_box_seal(reinterpret_cast<unsigned char*>(scratch.data()), message.data(), message.size(), pubk.data());
-		if (res != 0)
-			return 69;
-
-		mcleece::public_key_simple pk(pubk.data() + crypto_box_PUBLICKEYBYTES);
-		res = mcleece::simple::encrypt(output_c, mcleece::byte_view(scratch), pk);
-		if (res != 0)
-			return 6 + res;
-
-		return 0;
+		mcleece::sodium_crypto_box box(pubk.data());
+		box.mix(mix);
+		return box.seal(const_cast<unsigned char*>(output_c.data()), message.data(), message.size());
 	}
 
 	inline int crypto_box_seal_open(mcleece::byte_view output_m, const mcleece::byte_view ciphertext, const mcleece::public_key_sodium& pubk, const mcleece::private_key_cbox& secret)
 	{
-		if (ciphertext.size() < FULL_MESSAGE_HEADER_SIZE)
+		if (!pubk.good())
+			return 64;
+
+		if (ciphertext.size() < MESSAGE_HEADER_SIZE)
 			return 65;
-
-		std::string scratch;
-		scratch.resize(ciphertext.size() - mcleece::simple::MESSAGE_HEADER_SIZE);
-
-		mcleece::byte_view sb(scratch);
-		mcleece::private_key_simple sk(secret.data() + crypto_box_SECRETKEYBYTES);
-		int res = mcleece::simple::decrypt(sb, ciphertext, sk);
-		if (res != 0)
-			return 6 + res;
-
-		res = ::crypto_box_seal_open(const_cast<unsigned char*>(output_m.data()), reinterpret_cast<unsigned char*>(scratch.data()), scratch.size(), pubk.data(), secret.data());
-		if (res != 0)
-			return 69;
-
-		return 0;
-	}
-
-	// `message` should be plaintext sized to len(message) + MESSAGE_HEADER_SIZE
-	inline int inplace_crypto_box_seal(mcleece::byte_view message, mcleece::byte_view scratch, const mcleece::public_key_cbox& pubk)
-	{
-		// message contains the data going on, and will be overwritten with the final ciphertext.
-		// scratch will hold the intermediate representation -- a normal libsodium crypto_box_seal result
-		// inner layer: crypto_box. outer layer: libmcleece encrypt
-		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
-			return 65;
-		if (scratch.size() < message.size() - mcleece::simple::MESSAGE_HEADER_SIZE)
-			return 66;
-
-		mcleece::byte_view input(message.data(), message.size() - FULL_MESSAGE_HEADER_SIZE);
-		int res = ::crypto_box_seal(const_cast<unsigned char*>(scratch.data()), input.data(), input.size(), pubk.data());
-		if (res != 0)
-			return 69;
-
-		mcleece::byte_view ciphertext = message;
-		mcleece::public_key_simple pk(pubk.data() + crypto_box_PUBLICKEYBYTES);
-		res = mcleece::simple::encrypt(ciphertext, scratch, pk);
-		if (res != 0)
-			return 6 + res;
-
-		return 0;
-	}
-
-	inline int inplace_crypto_box_seal_open(mcleece::byte_view message, mcleece::byte_view scratch, const mcleece::public_key_sodium& pubk, const mcleece::private_key_cbox& secret)
-	{
-		if (message.size() < FULL_MESSAGE_HEADER_SIZE)
-			return 65;
-		if (scratch.size() < crypto_box_SEALBYTES)
-			return 66;
 
 		mcleece::private_key_simple sk(secret.data() + crypto_box_SECRETKEYBYTES);
-		int res = mcleece::simple::decrypt(scratch, message, sk);
-		if (res != 0)
-			return 6 + res;
+		auto mix = [&sk](mcleece::byte_view& in, unsigned char* key, const unsigned char* nonce)
+		{
+			return mcleece_seal_open_mix(in, key, nonce, sk);
+		};
 
-		res = ::crypto_box_seal_open(const_cast<unsigned char*>(message.data()), scratch.data(), scratch.size(), pubk.data(), secret.data());
-		if (res != 0)
-			return 69;
-
-		message = {message.data(), message.size() - FULL_MESSAGE_HEADER_SIZE};
-		return 0;
+		mcleece::sodium_crypto_box box(pubk.data(), secret.data());
+		box.mix(mix);
+		return box.seal_open(const_cast<unsigned char*>(output_m.data()), ciphertext.data(), ciphertext.size());
 	}
 }}
