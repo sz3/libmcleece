@@ -2,7 +2,7 @@
 
 A command line tool and C interface to encrypt/decrypt files using the Classic McEliece "post-quantum", code-based asymmetric key exchange scheme.
 
-libmcleece's default behavior is to use hybrid key exchange -- using the Classic McEliece KEM, and libsodium's `crypto_box_seal` (`x25519`) -- to generate a shared secret for a libsodium `crypto_box` (`xsalsa20poly1305`).
+libmcleece's default behavior is to use hybrid key exchange -- using the Classic McEliece KEM, and libsodium's `crypto_box_seal` (`x25519`) -- to generate a secret key for a libsodium `crypto_box` (`xsalsa20poly1305`).
 
 The [actual McEliece implementation](./src/third_party_lib/mceliece6960119f) is from the Classic McEliece NIST submission:
 https://classic.mceliece.org/nist.html
