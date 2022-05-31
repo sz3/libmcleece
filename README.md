@@ -100,7 +100,7 @@ Explanation:
 * `mcleece_crypto_box` functions are modified libsodium `crypto_box_seal` operations. This means that even if something is awry with libmcleece's PQC, theoretically the encrypted payload will still be as secure as `crypto_box_seal` is. (that is: pretty good, unless your adversary has a powerful quantum computer)
    * `mcleece_crypto_box` is the default behavior for the cli.
 * `mcleece_crypto_box` keypairs are larger, since they contain two keypairs. Specifically, the x25519 (public/private) key bytes are prepended in front of the Classic McEliece key bytes.
-* `mcleece_simple` functions do not use x25519 -- the shared secret is only protected by Classic McEliece.
+* `mcleece_simple` functions do not use x25519 -- the random secret is only protected by Classic McEliece.
 
 
 ## C++ API
