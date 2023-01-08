@@ -6,7 +6,7 @@
 #include "util/File.h"
 
 #include "mceliece6960119f/crypto_kem.h"
-#include "sodium/crypto_pwhash_scryptsalsa208sha256.h"
+#include "sodium/crypto_pwhash_argon2id.h"
 #include "sodium/randombytes.h"
 #include <array>
 #include <fstream>
@@ -28,24 +28,25 @@ public:
 
 protected:
 	using DATA_ARRAY = std::array<unsigned char, size()>;
-	using SALT_ARRAY = std::array<unsigned char, crypto_pwhash_scryptsalsa208sha256_SALTBYTES>;
+	using SALT_ARRAY = std::array<unsigned char, crypto_pwhash_argon2id_SALTBYTES>;
 
 protected:
 	bool generate_scrypt_data(DATA_ARRAY& blob, const std::string& pw, const SALT_ARRAY& salt) const
 	{
-		return crypto_pwhash_scryptsalsa208sha256(blob.data(), blob.size(), pw.data(), pw.size(), salt.data(),
-		                                          crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_INTERACTIVE,
-		                                          crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE) == 0;
+		return crypto_pwhash_argon2id(blob.data(), blob.size(), pw.data(), pw.size(), salt.data(),
+									  crypto_pwhash_argon2id_OPSLIMIT_SENSITIVE,
+									  crypto_pwhash_argon2id_MEMLIMIT_SENSITIVE,
+									  crypto_pwhash_argon2id_ALG_ARGON2ID13) == 0;
 	}
 
 
 public:
 	private_key()
-	    : _view(static_cast<unsigned char*>(nullptr), 0)
+		: _view(static_cast<unsigned char*>(nullptr), 0)
 	{}
 
 	explicit private_key(const unsigned char* buff)
-	    : _view(buff, size())
+		: _view(buff, size())
 	{}
 
 	static private_key from_file(std::string filename, std::string pw)
