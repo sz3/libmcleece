@@ -4,13 +4,13 @@
 
 #ifndef BENES_H
 #define BENES_H
-#define apply_benes CRYPTO_NAMESPACE(apply_benes)
+#define benes CRYPTO_NAMESPACE(benes)
 #define support_gen CRYPTO_NAMESPACE(support_gen)
 
 #include "gf.h"
+#include "vec.h"
 
-void apply_benes(unsigned char *, const unsigned char *, int);
-void support_gen(gf *, const unsigned char *);
+void benes(vec *, const unsigned char *, int);
 
 #endif
 

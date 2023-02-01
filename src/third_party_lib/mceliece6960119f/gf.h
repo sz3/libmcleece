@@ -8,6 +8,7 @@
 #define gf_frac CRYPTO_NAMESPACE(gf_frac)
 #define gf_inv CRYPTO_NAMESPACE(gf_inv)
 #define gf_iszero CRYPTO_NAMESPACE(gf_iszero)
+#define gf_mul2 CRYPTO_NAMESPACE(gf_mul2)
 #define gf_mul CRYPTO_NAMESPACE(gf_mul)
 #define GF_mul CRYPTO_NAMESPACE(GF_mul)
 
@@ -16,7 +17,6 @@
 typedef uint16_t gf;
 
 gf gf_iszero(gf);
-gf gf_add(gf, gf);
 gf gf_mul(gf, gf);
 gf gf_frac(gf, gf);
 gf gf_inv(gf);

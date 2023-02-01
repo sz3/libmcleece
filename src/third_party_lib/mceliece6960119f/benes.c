@@ -59,11 +59,10 @@ static void layer_ex(uint64_t * data, uint64_t * bits, int lgs)
 /*        bits, condition bits of the Benes network */
 /*        rev, 0 for normal application; !0 for inverse */
 /* output: r, permuted bits */
-void apply_benes(unsigned char * r, const unsigned char * bits, int rev)
+void benes(vec * r, const unsigned char * bits, int rev)
 {
 	int i, iter, inc;
 
-	unsigned char *r_ptr = r;
 	const unsigned char *bits_ptr;
 
 	uint64_t r_int_v[2][64];
@@ -78,8 +77,8 @@ void apply_benes(unsigned char * r, const unsigned char * bits, int rev)
 		
 	for (i = 0; i < 64; i++)
 	{
-		r_int_v[0][i] = load8(r_ptr + i*16 + 0);
-		r_int_v[1][i] = load8(r_ptr + i*16 + 8);
+		r_int_v[0][i] = r[i*2 + 0];
+		r_int_v[1][i] = r[i*2 + 1];
 	}
 
 	transpose_64x64(r_int_h[0], r_int_v[0]);
@@ -140,42 +139,8 @@ void apply_benes(unsigned char * r, const unsigned char * bits, int rev)
 
 	for (i = 0; i < 64; i++)
 	{
-		store8(r_ptr + i*16 + 0, r_int_v[0][i]);
-		store8(r_ptr + i*16 + 8, r_int_v[1][i]);
-	}
-}
-
-/* input: condition bits c */
-/* output: support s */
-void support_gen(gf * s, const unsigned char *c)
-{
-	gf a;
-	int i, j;
-	unsigned char L[ GFBITS ][ (1 << GFBITS)/8 ];
-
-	for (i = 0; i < GFBITS; i++)
-		for (j = 0; j < (1 << GFBITS)/8; j++)
-			L[i][j] = 0;
-
-	for (i = 0; i < (1 << GFBITS); i++)
-	{
-		a = bitrev((gf) i);
-
-		for (j = 0; j < GFBITS; j++)
-			L[j][ i/8 ] |= ((a >> j) & 1) << (i%8);
-	}
-			
-	for (j = 0; j < GFBITS; j++)
-		apply_benes(L[j], c, 0);
-
-	for (i = 0; i < SYS_N; i++)
-	{
-		s[i] = 0;
-		for (j = GFBITS-1; j >= 0; j--)
-		{
-			s[i] <<= 1;
-			s[i] |= (L[j][i/8] >> (i%8)) & 1;
-		}
+		r[i*2+0] = r_int_v[0][i];
+		r[i*2+1] = r_int_v[1][i];
 	}
 }
 
