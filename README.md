@@ -4,7 +4,7 @@ A command line tool and C interface to encrypt/decrypt files using the Classic M
 
 libmcleece's default behavior is to use hybrid key exchange -- using the Classic McEliece KEM, and libsodium's `crypto_box_seal` (`x25519`) -- to generate a secret key for a libsodium `crypto_box` (`xsalsa20poly1305`).
 
-The [actual McEliece implementation](./src/third_party_lib/mceliece6960119f) is from the Classic McEliece NIST submission:
+The [actual McEliece implementation](./src/third_party_lib/mceliece6960119f) is from the Classic McEliece NIST submission, Round-4:
 https://classic.mceliece.org/nist.html
 
 The submission is not a standard yet!
@@ -104,5 +104,5 @@ Explanation:
 
 
 ## C++ API
-It is not (yet?) collected in a single-header, but the core of libmcleece are a handful of header-only C++ libraries. These can also be used, though I'm not sure how stable the API is yet... 
+It is not (yet?) collected in a single-header, but the core of libmcleece are a handful of header-only C++ libraries. These can also be used, though I'm not sure how stable the API is ... 
 
