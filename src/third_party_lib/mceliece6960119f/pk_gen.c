@@ -2,22 +2,75 @@
   This file is for public-key generation
 */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
+#include "pk_gen.h"
 
 #include "controlbits.h"
 #include "uint64_sort.h"
-#include "pk_gen.h"
+#include "transpose.h"
 #include "params.h"
 #include "benes.h"
-#include "root.h"
 #include "util.h"
+#include "fft.h"
+#include "crypto_declassify.h"
+#include "crypto_uint64.h"
+
+static crypto_uint64 uint64_is_equal_declassify(uint64_t t,uint64_t u)
+{
+  crypto_uint64 mask = crypto_uint64_equal_mask(t,u);
+  crypto_declassify(&mask,sizeof mask);
+  return mask;
+}
+
+static crypto_uint64 uint64_is_zero_declassify(uint64_t t)
+{
+  crypto_uint64 mask = crypto_uint64_zero_mask(t);
+  crypto_declassify(&mask,sizeof mask);
+  return mask;
+}
+
+#include <stdint.h>
 
 #define min(a, b) ((a < b) ? a : b)
 
-/* return number of trailing zeros of the non-zero input in */
+static void de_bitslicing(uint64_t * out, const vec in[][GFBITS])
+{
+	int i, j, r;
+
+	for (i = 0; i < (1 << GFBITS); i++)
+		out[i] = 0 ;
+
+	for (i = 0; i < 128; i++)
+	for (j = GFBITS-1; j >= 0; j--)
+	for (r = 0; r < 64; r++) 
+	{ 
+		out[i*64 + r] <<= 1; 
+		out[i*64 + r] |= (in[i][j] >> r) & 1; 
+	}
+}
+
+static void to_bitslicing_2x(vec out0[][GFBITS], vec out1[][GFBITS], const uint64_t * in)
+{
+	int i, j, r;
+
+	for (i = 0; i < 128; i++)
+	{
+		for (j = GFBITS-1; j >= 0; j--)
+		for (r = 63; r >= 0; r--)
+		{
+			out1[i][j] <<= 1;
+			out1[i][j] |= (in[i*64 + r] >> (j + GFBITS)) & 1;
+		}
+        
+		for (j = GFBITS-1; j >= 0; j--)
+		for (r = 63; r >= 0; r--)
+		{
+			out0[i][GFBITS-1-j] <<= 1;
+			out0[i][GFBITS-1-j] |= (in[i*64 + r] >> j) & 1;
+		}
+	}
+}
+
+/* return number of trailing zeros of in */
 static inline int ctz(uint64_t in)
 {
 	int i, b, m = 0, r = 0;
@@ -44,29 +97,24 @@ static inline uint64_t same_mask(uint16_t x, uint16_t y)
         return mask;
 }
 
-static int mov_columns(uint8_t mat[][ SYS_N/8 ], int16_t * pi, uint64_t * pivots)
+static int mov_columns(uint64_t mat[][ (SYS_N + 63) / 64 ], int16_t * pi, uint64_t * pivots)
 {
 	int i, j, k, s, block_idx, row, tail;
-	uint64_t buf[64], ctz_list[32], t, d, mask, one = 1; 
-	unsigned char tmp[9];       
-
+	uint64_t buf[64], ctz_list[32], t, d, mask, allone = -1, one = 1; 
+       
 	row = PK_NROWS - 32;
-	block_idx = row/8;
-	tail = row % 8;
+	block_idx = row/64;
+	tail = row % 64;
 
 	// extract the 32x64 matrix
 
 	for (i = 0; i < 32; i++)
-	{
-		for (j = 0; j < 9; j++) tmp[j] = mat[ row + i ][ block_idx + j ];
-		for (j = 0; j < 8; j++) tmp[j] = (tmp[j] >> tail) | (tmp[j+1] << (8-tail));
-
-		buf[i] = load8( tmp );
-	}
+		buf[i] = (mat[ row + i ][ block_idx + 0 ] >> tail) | 
+		         (mat[ row + i ][ block_idx + 1 ] << (64-tail));
         
 	// compute the column indices of pivots by Gaussian elimination.
 	// the indices are stored in ctz_list
-	
+
 	*pivots = 0;
 
 	for (i = 0; i < 32; i++)
@@ -75,12 +123,13 @@ static int mov_columns(uint8_t mat[][ SYS_N/8 ], int16_t * pi, uint64_t * pivots
 		for (j = i+1; j < 32; j++)
 			t |= buf[j];
 
-		if (t == 0) return -1; // return if buf is not full rank
+		if (uint64_is_zero_declassify(t)) return -1; // return if buf is not full rank
 
 		ctz_list[i] = s = ctz(t);
 		*pivots |= one << ctz_list[i];
 
 		for (j = i+1; j < 32; j++) { mask = (buf[i] >> s) & 1; mask -= 1;    buf[i] ^= buf[j] & mask; }
+		for (j =   0; j <  i; j++) { mask = (buf[j] >> s) & 1; mask = -mask; buf[j] ^= buf[i] & mask; }
 		for (j = i+1; j < 32; j++) { mask = (buf[j] >> s) & 1; mask = -mask; buf[j] ^= buf[i] & mask; }
 	}
    
@@ -99,12 +148,9 @@ static int mov_columns(uint8_t mat[][ SYS_N/8 ], int16_t * pi, uint64_t * pivots
 
 	for (i = 0; i < PK_NROWS; i++)
 	{
-
-		for (k = 0; k < 9; k++) tmp[k] = mat[ i ][ block_idx + k ];
-		for (k = 0; k < 8; k++) tmp[k] = (tmp[k] >> tail) | (tmp[k+1] << (8-tail));
-
-		t = load8( tmp );
-		
+		t = (mat[ i ][ block_idx + 0 ] >> tail) | 
+		    (mat[ i ][ block_idx + 1 ] << (64-tail));
+                
 		for (j = 0; j < 32; j++)
 		{
 			d  = t >> j;
@@ -114,102 +160,99 @@ static int mov_columns(uint8_t mat[][ SYS_N/8 ], int16_t * pi, uint64_t * pivots
 			t ^= d << ctz_list[j];
 			t ^= d << j;
 		}
-               	     
-		store8( tmp, t );
 
-		mat[ i ][ block_idx + 8 ] = (mat[ i ][ block_idx + 8 ] >> tail << tail) | (tmp[7] >> (8-tail));
-		mat[ i ][ block_idx + 0 ] = (tmp[0] << tail) | (mat[ i ][ block_idx ] << (8-tail) >> (8-tail));
-
-		for (k = 7; k >= 1; k--) 
-			mat[ i ][ block_idx + k ] = (tmp[k] << tail) | (tmp[k-1] >> (8-tail));
+		mat[ i ][ block_idx + 0 ] = (mat[ i ][ block_idx + 0 ] & (allone >> (64-tail))) | (t << tail);
+		mat[ i ][ block_idx + 1 ] = (mat[ i ][ block_idx + 1 ] & (allone << tail)) | (t >> (64-tail));
 	}
 
 	return 0;
 }
 
-/* input: secret key sk */
-/* output: public key pk */
-int pk_gen(unsigned char * pk, unsigned char * sk, uint32_t * perm, int16_t * pi, uint64_t * pivots)
+int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16_t * pi, uint64_t * pivots)
 {
-	unsigned char *pk_ptr = pk;
+	const int nblocks_H = (SYS_N + 63) / 64;
+	const int nblocks_I = (PK_NROWS + 63) / 64;
+	const int block_idx = nblocks_I - 1;
+	int tail = PK_NROWS % 64;
 
 	int i, j, k;
-	int row, c, tail;
+	int row, c;
+	
+	uint64_t mat[ PK_NROWS ][ nblocks_H ];
 
-	uint64_t buf[ 1 << GFBITS ];
+	uint64_t mask;	
 
-	unsigned char mat[ PK_NROWS ][ SYS_N/8 ];
-	unsigned char mask;
-	unsigned char b;
+	vec irr_int[2][ GFBITS ];
 
-	gf g[ SYS_T+1 ]; // Goppa polynomial
-	gf L[ SYS_N ]; // support
-	gf inv[ SYS_N ];
+	vec consts[ 128 ][ GFBITS ];
+	vec eval[ 128 ][ GFBITS ];
+	vec prod[ 128 ][ GFBITS ];
+	vec tmp[ GFBITS ];
 
-	//
+	uint64_t list[1 << GFBITS];
 
-	g[ SYS_T ] = 1;
+	// compute the inverses 
 
-	for (i = 0; i < SYS_T; i++) { g[i] = load_gf(sk); sk += 2; }
+	irr_load(irr_int, irr);
 
-	for (i = 0; i < (1 << GFBITS); i++)
+	fft(eval, irr_int);
+
+	vec_copy(prod[0], eval[0]);
+
+	for (i = 1; i < 128; i++)
+		vec_mul(prod[i], prod[i-1], eval[i]);
+
+	vec_inv(tmp, prod[127]);
+
+	for (i = 126; i >= 0; i--)
 	{
-		buf[i] = perm[i];
-		buf[i] <<= 31;
-		buf[i] |= i;
+		vec_mul(prod[i+1], prod[i], tmp);
+		vec_mul(tmp, tmp, eval[i+1]);
 	}
 
-	uint64_sort(buf, 1 << GFBITS);
+	vec_copy(prod[0], tmp);
+
+	// fill matrix 
+
+	de_bitslicing(list, prod);
+
+	for (i = 0; i < (1 << GFBITS); i++)
+	{	
+		list[i] <<= GFBITS;
+		list[i] |= i;	
+		list[i] |= ((uint64_t) perm[i]) << 31;
+	}
+
+	uint64_sort(list, 1 << GFBITS);
 
 	for (i = 1; i < (1 << GFBITS); i++)
-		if ((buf[i-1] >> 31) == (buf[i] >> 31))
+		if (uint64_is_equal_declassify(list[i-1] >> 31,list[i] >> 31))
 			return -1;
 
-	for (i = 0; i < (1 << GFBITS); i++) pi[i] = buf[i] & GFMASK;
-	for (i = 0; i < SYS_N;         i++) L[i] = bitrev(pi[i]);
+	to_bitslicing_2x(consts, prod, list);
 
-	// filling the matrix
+	for (i = 0; i < (1 << GFBITS); i++)
+		pi[i] = list[i] & GFMASK;
 
-	root(inv, g, L);
-		
-	for (i = 0; i < SYS_N; i++)
-		inv[i] = gf_inv(inv[i]);
+	for (j = 0; j < nblocks_H; j++)
+	for (k = 0; k < GFBITS; k++)
+		mat[ k ][ j ] = prod[ j ][ k ];
 
-	for (i = 0; i < PK_NROWS; i++)
-	for (j = 0; j < SYS_N/8; j++)
-		mat[i][j] = 0;
-
-	for (i = 0; i < SYS_T; i++)
+	for (i = 1; i < SYS_T; i++)
+	for (j = 0; j < nblocks_H; j++)
 	{
-		for (j = 0; j < SYS_N; j+=8)
-		for (k = 0; k < GFBITS;  k++)
-		{
-			b  = (inv[j+7] >> k) & 1; b <<= 1;
-			b |= (inv[j+6] >> k) & 1; b <<= 1;
-			b |= (inv[j+5] >> k) & 1; b <<= 1;
-			b |= (inv[j+4] >> k) & 1; b <<= 1;
-			b |= (inv[j+3] >> k) & 1; b <<= 1;
-			b |= (inv[j+2] >> k) & 1; b <<= 1;
-			b |= (inv[j+1] >> k) & 1; b <<= 1;
-			b |= (inv[j+0] >> k) & 1;
+		vec_mul(prod[j], prod[j], consts[j]);
 
-			mat[ i*GFBITS + k ][ j/8 ] = b;
-		}
-
-		for (j = 0; j < SYS_N; j++)
-			inv[j] = gf_mul(inv[j], L[j]);
-
+		for (k = 0; k < GFBITS; k++)
+			mat[ i*GFBITS + k ][ j ] = prod[ j ][ k ];
 	}
 
 	// gaussian elimination
 
-	for (i = 0; i < (PK_NROWS + 7) / 8; i++)
-	for (j = 0; j < 8; j++)
+	for (row = 0; row < PK_NROWS; row++)
 	{
-		row = i*8 + j;			
-
-		if (row >= PK_NROWS)
-			break;
+		i = row >> 6;
+		j = row & 63;
 
 		if (row == PK_NROWS - 32)
 		{
@@ -219,43 +262,58 @@ int pk_gen(unsigned char * pk, unsigned char * sk, uint32_t * perm, int16_t * pi
 
 		for (k = row + 1; k < PK_NROWS; k++)
 		{
-			mask = mat[ row ][ i ] ^ mat[ k ][ i ];
-			mask >>= j;
+			mask = mat[ row ][ i ] >> j;
 			mask &= 1;
-			mask = -mask;
+			mask -= 1;
 
-			for (c = 0; c < SYS_N/8; c++)
+			for (c = 0; c < nblocks_H; c++)
 				mat[ row ][ c ] ^= mat[ k ][ c ] & mask;
 		}
 
-		if ( ((mat[ row ][ i ] >> j) & 1) == 0 ) // return if not systematic
+                if ( uint64_is_zero_declassify((mat[ row ][ i ] >> j) & 1) ) // return if not systematic
 		{
 			return -1;
 		}
 
-		for (k = 0; k < PK_NROWS; k++)
+		for (k = 0; k < row; k++)
 		{
-			if (k != row)
-			{
-				mask = mat[ k ][ i ] >> j;
-				mask &= 1;
-				mask = -mask;
+			mask = mat[ k ][ i ] >> j;
+			mask &= 1;
+			mask = -mask;
 
-				for (c = 0; c < SYS_N/8; c++)
-					mat[ k ][ c ] ^= mat[ row ][ c ] & mask;
-			}
+			for (c = 0; c < nblocks_H; c++)
+				mat[ k ][ c ] ^= mat[ row ][ c ] & mask;
+		}
+
+		for (k = row+1; k < PK_NROWS; k++)
+		{
+			mask = mat[ k ][ i ] >> j;
+			mask &= 1;
+			mask = -mask;
+
+			for (c = 0; c < nblocks_H; c++)
+				mat[ k ][ c ] ^= mat[ row ][ c ] & mask;
 		}
 	}
 
-	tail = PK_NROWS % 8;
-
-	for (i = 0; i < PK_NROWS; i++)
+	for (row = 0; row < PK_NROWS; row++)
 	{
-		for (j = (PK_NROWS - 1)/8; j < SYS_N/8 - 1; j++)
-			*pk_ptr++ = (mat[i][j] >> tail) | (mat[i][j+1] << (8-tail));
+		for (k = block_idx; k < nblocks_H - 1; k++)
+		{
+			mat[row][k] = (mat[row][k] >> tail) | (mat[row][k+1] << (64-tail));
+			store8(pk, mat[row][k]);
+			pk += 8;
+		}
 
-		*pk_ptr++ = (mat[i][j] >> tail);
+		mat[row][k] >>= tail;
+		store_i(pk, mat[row][k], PK_ROW_BYTES % 8);
+
+		pk[ (PK_ROW_BYTES % 8)-1 ] &= (1 << (PK_NCOLS % 8)) - 1; // removing redundant bits
+
+		pk += PK_ROW_BYTES % 8;
 	}
+
+	//
 
 	return 0;
 }

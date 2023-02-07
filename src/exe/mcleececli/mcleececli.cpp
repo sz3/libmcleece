@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 	}
 
 	else
-		return help(options, "Please specify a valid command: [encrypt|decrypt|generate-keypair]");
+		return help(options, "Please specify a valid command: [encrypt|decrypt|keypair]");
 
 	return 0;
 }

@@ -6,9 +6,9 @@
 #define PK_GEN_H
 #define pk_gen CRYPTO_NAMESPACE(pk_gen)
 
-#include "gf.h"
+#include <stdint.h>
 
-int pk_gen(unsigned char *, unsigned char *, uint32_t *, int16_t *, uint64_t *);
+int pk_gen(unsigned char *, const unsigned char *, uint32_t *, int16_t *, uint64_t *);
 
 #endif
 

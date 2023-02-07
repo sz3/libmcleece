@@ -1,11 +1,12 @@
 /*
-  This file is for functions for field arithmetic
+  this file is for functions for field arithmetic
 */
 
 #include "gf.h"
 
 #include "params.h"
 
+/* check if a == 0 */
 gf gf_iszero(gf a)
 {
 	uint32_t t = a;
@@ -16,11 +17,7 @@ gf gf_iszero(gf a)
 	return (gf) t;
 }
 
-gf gf_add(gf in0, gf in1)
-{
-	return in0 ^ in1;
-}
-
+/* field multiplication */
 gf gf_mul(gf in0, gf in1)
 {
 	int i;
@@ -49,8 +46,7 @@ gf gf_mul(gf in0, gf in1)
 	return tmp & GFMASK;
 }
 
-/* input: field element in */
-/* return: (in^2)^2 */
+/* square twice */
 static inline gf gf_sq2(gf in)
 {
 	int i;
@@ -82,8 +78,7 @@ static inline gf gf_sq2(gf in)
 	return x & GFMASK;
 }
 
-/* input: field element in, m */
-/* return: (in^2)*m */
+/* square and multiply */
 static inline gf gf_sqmul(gf in, gf m)
 {
 	int i;
@@ -120,8 +115,7 @@ static inline gf gf_sqmul(gf in, gf m)
 	return x & GFMASK;
 }
 
-/* input: field element in, m */
-/* return: ((in^2)^2)*m */
+/* square twice and multiply */
 static inline gf gf_sq2mul(gf in, gf m)
 {
 	int i;
@@ -161,8 +155,7 @@ static inline gf gf_sq2mul(gf in, gf m)
 	return x & GFMASK;
 }
 
-/* input: field element den, num */
-/* return: (num/den) */
+/* return num/den */
 gf gf_frac(gf den, gf num)
 {
 	gf tmp_11;
@@ -179,35 +172,35 @@ gf gf_frac(gf den, gf num)
 	return gf_sqmul(out, num); // ^1111111111110 = ^-1
 }
 
+/* return 1/den */
 gf gf_inv(gf den)
 {
 	return gf_frac(den, ((gf) 1));
 }
 
-/* input: in0, in1 in GF((2^m)^t)*/
-/* output: out = in0*in1 */
+/* multiplication in GF((2^m)^t) */
 void GF_mul(gf *out, gf *in0, gf *in1)
 {
 	int i, j;
 
-	gf prod[ SYS_T*2-1 ];
+	gf prod[237];
 
-	for (i = 0; i < SYS_T*2-1; i++)
+	for (i = 0; i < 237; i++)
 		prod[i] = 0;
 
-	for (i = 0; i < SYS_T; i++)
-		for (j = 0; j < SYS_T; j++)
+	for (i = 0; i < 119; i++)
+		for (j = 0; j < 119; j++)
 			prod[i+j] ^= gf_mul(in0[i], in1[j]);
 
 	//
  
-	for (i = (SYS_T-1)*2; i >= SYS_T; i--)
+	for (i = 236; i >= 119; i--)
 	{
-		prod[i - SYS_T +  8] ^= prod[i];
-		prod[i - SYS_T +  0] ^= prod[i];
+		prod[i - 111] ^= prod[i];
+		prod[i - 119] ^= prod[i];
 	}
 
-	for (i = 0; i < SYS_T; i++)
+	for (i = 0; i < 119; i++)
 		out[i] = prod[i];
 }
 

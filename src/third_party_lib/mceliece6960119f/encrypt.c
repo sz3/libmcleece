@@ -6,6 +6,7 @@
 
 #include "util.h"
 #include "params.h"
+#include "uint16_sort.h"
 #include "randombytes.h"
 
 #include <stdint.h>
@@ -14,17 +15,22 @@
 #include <string.h>
 
 #include "gf.h"
+#include "crypto_declassify.h"
+#include "crypto_uint16.h"
+#include "crypto_uint32.h"
 
-static inline unsigned char same_mask(uint16_t x, uint16_t y)
+static inline crypto_uint16 uint16_is_smaller_declassify(uint16_t t,uint16_t u)
 {
-	uint32_t mask;
+  crypto_uint16 mask = crypto_uint16_smaller_mask(t,u);
+  crypto_declassify(&mask,sizeof mask);
+  return mask;
+}
 
-	mask = x ^ y;
-	mask -= 1;
-	mask >>= 31;
-	mask = -mask;
-
-	return mask & 0xFF;
+static inline crypto_uint32 uint32_is_equal_declassify(uint32_t t,uint32_t u)
+{
+  crypto_uint32 mask = crypto_uint32_equal_mask(t,u);
+  crypto_declassify(&mask,sizeof mask);
+  return mask;
 }
 
 /* output: e, an error vector of weight t */
@@ -39,8 +45,10 @@ static void gen_e(unsigned char *e)
 	} buf;
 
 	uint16_t ind[ SYS_T ];
-	unsigned char mask;	
-	unsigned char val[ SYS_T ];	
+	uint64_t e_int[ (SYS_N+63)/64 ];	
+	uint64_t one = 1;	
+	uint64_t mask;	
+	uint64_t val[ SYS_T ];	
 
 	while (1)
 	{
@@ -53,80 +61,99 @@ static void gen_e(unsigned char *e)
 
 		count = 0;
 		for (i = 0; i < SYS_T*2 && count < SYS_T; i++)
-			if (buf.nums[i] < SYS_N)
+			if (uint16_is_smaller_declassify(buf.nums[i],SYS_N))
 				ind[ count++ ] = buf.nums[i];
 		
 		if (count < SYS_T) continue;
 
 		// check for repetition
 
+		uint16_sort(ind, SYS_T);
+		
 		eq = 0;
-
-		for (i = 1; i < SYS_T; i++) 
-			for (j = 0; j < i; j++)
-				if (ind[i] == ind[j]) 
-					eq = 1;
+		for (i = 1; i < SYS_T; i++)
+			if (uint32_is_equal_declassify(ind[i-1],ind[i]))
+				eq = 1;
 
 		if (eq == 0)
 			break;
 	}
 
 	for (j = 0; j < SYS_T; j++)
-		val[j] = 1 << (ind[j] & 7);
+		val[j] = one << (ind[j] & 63);
 
-	for (i = 0; i < SYS_N/8; i++) 
+	for (i = 0; i < (SYS_N+63)/64; i++) 
 	{
-		e[i] = 0;
+		e_int[i] = 0;
 
 		for (j = 0; j < SYS_T; j++)
 		{
-			mask = same_mask(i, (ind[j] >> 3));
+			mask = i ^ (ind[j] >> 6);
+			mask -= 1;
+			mask >>= 63;
+			mask = -mask;
 
-			e[i] |= val[j] & mask;
+			e_int[i] |= val[j] & mask;
 		}
 	}
+
+	for (i = 0; i < (SYS_N+63)/64 - 1; i++) 
+		{ store8(e, e_int[i]); e += 8; }
+
+	for (j = 0; j < (SYS_N % 64); j+=8) 
+		e[ j/8 ] = (e_int[i] >> j) & 0xFF;
 }
 
 /* input: public key pk, error vector e */
 /* output: syndrome s */
 static void syndrome(unsigned char *s, const unsigned char *pk, unsigned char *e)
 {
-	unsigned char b, row[SYS_N/8];
-	const unsigned char *pk_ptr = pk;
+	unsigned char e_tmp[ SYS_N/8 ];
 
-	int i, j, tail = PK_NROWS % 8;
+	uint64_t b;
 
+	const uint64_t *pk_ptr; 
+	const uint64_t *e_ptr = ((uint64_t *) (e_tmp + SYND_BYTES - 1));
+
+	int i, j, k, tail = (PK_NROWS % 8);
+
+	//
+	
 	for (i = 0; i < SYND_BYTES; i++)
-		s[i] = 0;
+		s[i] = e[i];
+
+	s[i-1] &= (1 << tail) - 1;
+
+	for (i = SYND_BYTES-1; i < SYS_N/8-1; i++)
+		e_tmp[i] = (e[i] >> tail) | (e[i+1] << (8-tail));
+
+	e_tmp[i] = e[i] >> tail;
 
 	for (i = 0; i < PK_NROWS; i++)	
 	{
-		for (j = 0; j < SYS_N/8; j++) 
-			row[j] = 0;
-
-		for (j = 0; j < PK_ROW_BYTES; j++) 
-			row[ SYS_N/8 - PK_ROW_BYTES + j ] = pk_ptr[j];
-
-		for (j = SYS_N/8-1; j >= SYS_N/8 - PK_ROW_BYTES; j--) 
-			row[ j ] = (row[ j ] << tail) | (row[j-1] >> (8-tail));
-
-		row[i/8] |= 1 << (i%8);
-		
+		pk_ptr = ((uint64_t *) (pk + PK_ROW_BYTES * i));
+	
 		b = 0;
-		for (j = 0; j < SYS_N/8; j++)
-			b ^= row[j] & e[j];
+		for (j = 0; j < PK_NCOLS/64; j++)
+			b ^= pk_ptr[j] & e_ptr[j];
 
+		for (k = 0; k < (PK_NCOLS%64 + 7)/8; k++)
+			b ^= ((unsigned char *) &pk_ptr[j])[k] & ((unsigned char *) &e_ptr[j])[k];
+
+		b ^= b >> 32;
+		b ^= b >> 16;
+		b ^= b >> 8;
 		b ^= b >> 4;
 		b ^= b >> 2;
 		b ^= b >> 1;
 		b &= 1;
 
-		s[ i/8 ] |= (b << (i%8));
-
-		pk_ptr += PK_ROW_BYTES;
+		s[ i/8 ] ^= (b << (i%8));
 	}
 }
 
+/* input: public key pk */
+/* output: error vector e, syndrome s */
 void encrypt(unsigned char *s, const unsigned char *pk, unsigned char *e)
 {
 	gen_e(e);
