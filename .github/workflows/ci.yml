@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest]
+        os: [ubuntu-22.04, ubuntu-latest, macos-latest]
 
     steps:
     - name: checkout
@@ -36,7 +36,7 @@ jobs:
       run: ctest --output-on-failure
 
   cppcheck:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2

@@ -6,7 +6,7 @@
 #include "serialize/format.h"
 #include "util/byte_view.h"
 
-#include "sodium/crypto_box.h"
+#include "sodium/crypto_generichash.h"
 #include <string>
 #include <vector>
 
@@ -31,10 +31,15 @@ namespace cbox {
 		return 0;
 	}
 
-	inline void mix_buf(unsigned char* out, const unsigned char* in, unsigned n)
+	inline void mix_buf(unsigned char* out, const unsigned char* in, unsigned n, const unsigned char* key, unsigned keylen)
 	{
-		for (unsigned i = 0; i < n; ++i)
-			out[i] ^= in[i];
+		// out = hmac(out + in)
+		// hmac key is our nonce
+		crypto_generichash_state hashState;
+		crypto_generichash_init(&hashState, key, keylen, n);
+		crypto_generichash_update(&hashState, out, n);
+		crypto_generichash_update(&hashState, in, n);
+		crypto_generichash_final(&hashState, out, n);
 	}
 
 	inline bool mcleece_seal_mix(mcleece::byte_view& out, unsigned char* key, const unsigned char* nonce, const mcleece::public_key_simple& pubk)
@@ -45,8 +50,7 @@ namespace cbox {
 		out.write(session.encrypted_key().data(), session.encrypted_key().size());
 
 		// then mix key and session
-		// currently: xor
-		mix_buf(key, session.key().data(), session.key().size());
+		mix_buf(key, session.key().data(), session.key().size(), nonce, crypto_box_NONCEBYTES);
 
 		return true;
 	}
@@ -62,8 +66,7 @@ namespace cbox {
 		in.advance(mcleece::session_key::size());
 
 		// then mix key and session
-		// currently: xor
-		mix_buf(key, session.key().data(), session.key().size());
+		mix_buf(key, session.key().data(), session.key().size(), nonce, crypto_box_NONCEBYTES);
 
 		return true;
 	}
